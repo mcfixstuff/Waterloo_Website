@@ -1,4 +1,4 @@
-Eric Parsons
-Amrinder Singh
-Amsal Moiz
-Subhan Hussain
+- Eric Parsons
+- Amrinder Singh
+- Amsal Moiz
+- Subhan Hussain
