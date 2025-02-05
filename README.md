@@ -1,2 +1,3 @@
 # COSC-4353-Group-Project
-Team Name: Waterloo
+Welcome to the official repository for Team Waterloo's project!
+
