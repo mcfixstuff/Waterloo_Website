@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Admin Dashboard</title>
+</head>
+<body>
+   <div style="display: flex; justify-content: space-between; align-items: center">
+       <h1>Welcome, {{ user_name }}!</h1>
+       <a href="{% url 'logout' %}" style="padding: 10px; background: #ff0000; color: white; text-decoration: none; border-radius: 5px">Logout</a>
+   </div>
+   
+   <h2>Users List</h2>
+   <table border="1">
+       <tr>
+           <th>Username</th>
+           <th>Email</th>
+           <th>Role</th>
+       </tr>
+       {% for user in users %}
+       <p>Logged-in User Role: {{ user_role }}</p>
+        <p>Current Row User Role: {{ user.role }}</p>
+
+
+        <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>Current Row User Role: {{ user.role }}</td>  <!-- Shows the role of each user -->
+            <td>
+                {% if user_role == "superuser" and user.role != "superuser" %}
+                    <form action="{% url 'toggle_user_status' user.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">
+                            {% if user.status %} Disable {% else %} Enable {% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        
+    
+    
+       {% endfor %}
+   </table>
+</body>
+</html>

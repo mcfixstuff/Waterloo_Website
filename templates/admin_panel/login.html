@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h1>Welcome to Waterloo Admin Panel</h1>
+    <p>Please log in with Microsoft:</p>
+    <form action="{% url 'trigger_microsoft_login' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Login with Microsoft</button>
+    </form>
+</body>
+</html>
