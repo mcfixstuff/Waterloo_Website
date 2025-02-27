@@ -1,5 +1,5 @@
 # Use a lightweight Debian-based Python image
-FROM python:3.8-slim-buster
+FROM python:3.10-slim-buster
 
 # Install system dependencies for Python & PostgreSQL
 RUN apt-get update && apt-get install -y \
