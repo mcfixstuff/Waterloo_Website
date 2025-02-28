@@ -39,7 +39,7 @@
                 <a href="#" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#newApplicationModal">
                     <i class="fas fa-plus-circle"></i> New Application
                 </a>
-                <a href="#" class="btn btn-danger">Logout</a>
+                <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
             </div>
         </div>
 
@@ -54,13 +54,17 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-9">
-                        <p><strong>Name:</strong> John Doe</p>
-                        <p><strong>Email:</strong> john.doe@example.com</p>
-                        <p><strong>Role:</strong> <span class="badge bg-primary">Student</span></p>
+                        <p><strong>Name:</strong> {{ user.username }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>Role:</strong> <span class="badge bg-primary">{{ user.role }}</span></p>
                     </div>
                     <div class="col-md-3 text-center">
                         <div class="border p-3 mb-2">
-                            <img src="/api/placeholder/200/100" alt="Your signature" class="img-fluid" style="max-height: 100px;">
+                            {% if user.signature_image %}
+                                <img src="{{ user.signature_image.url }}" alt="Your signature" class="img-fluid" style="max-height: 100px;">
+                            {% else %}
+                                <p class="text-muted">No signature</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -180,6 +184,7 @@
                 </div>
                 <div class="modal-body">
                     <form action="#" method="post">
+                        {% csrf_token %}
                         <div class="mb-3">
                             <label for="formType" class="form-label">Form Type</label>
                             <select class="form-select" id="formType" name="form_type" required>
@@ -210,13 +215,18 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="#" method="post" enctype="multipart/form-data">
+                    <form action="{% url 'upload_signature' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
                         <div class="mb-3">
                             <div class="text-center mb-3 p-3 border">
-                                <img src="/api/placeholder/200/100" alt="Your signature" class="img-fluid" style="max-height: 100px;">
+                                {% if user.signature_image %}
+                                    <img src="{{ user.signature_image.url }}" alt="Your signature" class="img-fluid" style="max-height: 100px;">
+                                {% else %}
+                                    <p class="text-muted">No signature uploaded</p>
+                                {% endif %}
                             </div>
-                            <label for="signatureFile" class="form-label">Upload Signature Image</label>
-                            <input class="form-control" type="file" id="signatureFile" name="signature_file" accept="image/*" required>
+                            <label for="{{ signature_form.signature_image.id_for_label }}" class="form-label">Upload Signature Image</label>
+                            {{ signature_form.signature_image }}
                             <div class="form-text">Upload an image of your signature. PNG or JPG format recommended.</div>
                         </div>
                         <div class="text-end">

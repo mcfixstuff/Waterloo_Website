@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from admin_panel.models import User
 import msal
 import requests
-
+from .forms import UserSignatureForm
 
 # Authentication Views
 def show_login_page(request):
@@ -153,13 +153,56 @@ def change_user_role(request, user_id):
 #PROJECT 0.2
 
 
-def Applications(request):
-    """Render the Applications"""
+
+# Update your existing upload_signature view or add it if it doesn't exist
+def upload_signature(request):
+    """Handle user signature upload."""
+    if "access_token" not in request.session:
+        return redirect("login")
+    
+    email = request.session.get("user_email")
+    if not email:
+        return redirect("login")
+    
+    user = get_object_or_404(User, email=email)
+    
+    if request.method == 'POST':
+        form = UserSignatureForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('Applications')  # Redirect to applications page after success
+    else:
+        form = UserSignatureForm(instance=user)
+    
+    # You don't need a separate template as you're using a modal in your existing template
+    # Pass the form to the applications template
     context = {
         'active_page': 'Applications',
-        # other context data
-    }    
-    return render(request, "admin_panel/Applications.html",context)
+        'user': user,
+        'signature_form': form
+    }
+    return render(request, "admin_panel/Applications.html", context)
+
+
+# 3. Update the Applications view to include the signature form
+def Applications(request):
+    """Render the Applications page with signature form."""
+    if "access_token" not in request.session:
+        return redirect("login")
+    
+    email = request.session.get("user_email")
+    if not email:
+        return redirect("login")
+    
+    user = get_object_or_404(User, email=email)
+    signature_form = UserSignatureForm(instance=user)
+    
+    context = {
+        'active_page': 'Applications',
+        'user': user,
+        'signature_form': signature_form
+    }
+    return render(request, "admin_panel/Applications.html", context)
 
 
 def ApplicationApprovals(request):
@@ -169,6 +212,7 @@ def ApplicationApprovals(request):
         # other context data
     }
     return render(request, "admin_panel/ApplicationApprovalsDashboard.html",context)
+
         
 
 

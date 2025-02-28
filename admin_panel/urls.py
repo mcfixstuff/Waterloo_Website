@@ -17,4 +17,6 @@ urlpatterns = [
     path("ApplicationApprovals/", views.ApplicationApprovals, name="ApplicationApprovals"),  # ✅ New route
     path("Applications/", views.Applications, name="Applications"),  # ✅ New route
     
+        # Add this new URL for signature upload
+    path("upload-signature/", views.upload_signature, name="upload_signature"),
 ]
