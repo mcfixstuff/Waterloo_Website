@@ -10,9 +10,13 @@ cd Waterloo
 pip install -r requirements.txt
 
 
-Open psql or pgAdmin and run:
+Open psql or pgAdmin
+## for Linux users use command:: sudo -i -u postgres
+## then enter password
+## then run command:: psql
+## this will take you into the psql terminal
 
-
+When you are in the psql or pgAdmin panel, run:
 
 CREATE DATABASE waterloo;
 CREATE USER amrindersingh WITH PASSWORD 'Amuo1234567@';
