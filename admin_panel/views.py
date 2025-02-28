@@ -216,11 +216,6 @@ def ApplicationApprovals(request):
 
 
 
-def ApplicatiFERPAAuthorizationformons(request):
-    """Render the FERPA_Authorization_form"""
-    return render(request, "FERPA_Authorization_form.html")
-
-
 
 def select_form_type(request):
     """Handle form type selection from the modal."""
