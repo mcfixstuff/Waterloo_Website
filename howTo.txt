@@ -5,7 +5,7 @@ PostgreSQL
 
 git clone <your-repo-url>
 
-cd Waterloo
+cd Waterloo    ##### Important note. By Default, if you clone this to a linux machine, the directory will be Waterloo_Website ######
 
 pip install -r requirements.txt
 
@@ -43,6 +43,9 @@ python manage.py migrate
 
 python manage.py runserver
 
+########### FOR LINUX USERS!!!!!!! ##############
+# instead of using:: python manage.py runserver
+# run :: python manage.py runserver 0.0.0.0:8000
 
 
 http://localhost:8000/
