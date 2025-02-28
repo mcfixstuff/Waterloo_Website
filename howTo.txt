@@ -27,7 +27,8 @@ GRANT ALL PRIVILEGES ON DATABASE waterloo TO amrindersingh
 
 
 python manage.py migrate
-
+****ERROR AT THIS STEP FOR Eric Parsons!!!! I am getting an error code : psycopg2.errors.InsufficientPrivilege: permission denied for schema public*********
+**** unable to do migrations because of this*****
 
 python manage.py runserver
 
