@@ -30,3 +30,10 @@ python manage.py runserver
 
 
 http://localhost:8000/
+
+
+
+
+???
+
+curl -L "https://graphql-engine-cdn.hasura.io/ddn/cli/v4/get.sh" | bash

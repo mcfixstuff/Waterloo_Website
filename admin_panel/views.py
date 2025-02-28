@@ -11,6 +11,9 @@ import requests
 def show_login_page(request):
     """Render the login page."""
     return render(request, "admin_panel/login.html")
+        
+
+
 
 @csrf_exempt
 def trigger_microsoft_login(request):
@@ -103,6 +106,7 @@ def admin_dashboard(request):
         "user_role": current_user.role if current_user else "basicuser",
         "enabled_users": enabled_users,
         "disabled_users": disabled_users,
+        "active_page": "dashboard"
     })
 
 # User Management Views
@@ -145,3 +149,28 @@ def change_user_role(request, user_id):
         user.save()
 
     return redirect("admin_dashboard")
+
+#PROJECT 0.2
+
+
+def Applications(request):
+    """Render the Applications"""
+    context = {
+        'active_page': 'Applications',
+        # other context data
+    }    
+    return render(request, "admin_panel/Applications.html",context)
+
+
+def ApplicationApprovals(request):
+    """Render the ApplicationApprovals"""
+    context = {
+        'active_page': 'ApplicationApprovals',
+        # other context data
+    }
+    return render(request, "admin_panel/ApplicationApprovalsDashboard.html",context)
+        
+
+
+
+
