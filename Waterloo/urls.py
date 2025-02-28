@@ -16,27 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from admin_panel.views import homepage, rr_form, release_form
 
-
-# urlpatterns = [
-#     path("admin/", include("admin_panel.urls")),# Custom admin panel
-
-# ]
 
 urlpatterns = [
+    path("", homepage, name="homepage"),  # Add homepage route
+    path("RRForm/", rr_form, name="rr_form"),  # Residency Reclassification Form
+    path("ReleaseForm/", release_form, name="release_form"),  # Release Educational Records Form
     path("admin/",include('admin_panel.urls')),  # Main app (root)
 ]
 
-# from django.contrib import admin
-# from django.urls import include, path
-# from django.http import HttpResponse
-
-# # Simple home view
-# def home(request):
-#     return HttpResponse("Welcome to the Home Page!")
-
-# urlpatterns = [
-#     path("", home, name="home"),  # Root URL
-#     path("admin/", include("admin_panel.urls")),  # Custom admin panel
-#     path("dj-admin/", admin.site.urls),  # Optional: Keep Django's default admin panel
-# ]

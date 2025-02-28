@@ -6,6 +6,18 @@ from admin_panel.models import User
 import msal
 import requests
 
+def rr_form(request):
+    """Render the Residency Reclassification Form page."""
+    return render(request, "rr_form.html")
+
+def release_form(request):
+    """Render the Authorization to Release Educational Records form page."""
+    return render(request, "release_form.html")
+
+def homepage(request):
+    """Render the homepage."""
+    return render(request, "homepage.html")
+
 
 # Authentication Views
 def show_login_page(request):
