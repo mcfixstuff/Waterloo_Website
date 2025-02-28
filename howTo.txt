@@ -41,6 +41,9 @@ GRANT ALL PRIVILEGES ON DATABASE waterloo TO amrindersingh;
 
 python manage.py migrate
 
+## At this point, make sure you have placed the settings.py file to the [project folder]/Waterloo/settings.py
+## edit the settings.py to include the allowed hosts 'localhost', '0.0.0.0', '[your LAN ip address]', '[WAN ip address]', '[your.domain.end]'
+
 python manage.py runserver
 
 ########### FOR LINUX USERS!!!!!!! ##############
