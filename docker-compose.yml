@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: waterloo-db
+    restart: always
+    environment:
+      POSTGRES_DB: waterloo
+      POSTGRES_USER: amrindersingh
+      POSTGRES_PASSWORD: Amuo1234567@
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    container_name: waterloo-web
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgres://amrindersingh:Amuo1234567@@db:5432/waterloo"
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+
