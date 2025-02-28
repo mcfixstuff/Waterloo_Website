@@ -2,7 +2,7 @@
 URL configuration for Waterloo project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.1/topics/http/urls/
+    [https://docs.djangoproject.com/en/5.1/topics/http/urls/](https://docs.djangoproject.com/en/5.1/topics/http/urls/)
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -18,7 +18,25 @@ from django.contrib import admin
 from django.urls import include, path
 
 
-urlpatterns = [
-    path("admin/", include("admin_panel.urls")),# Custom admin panel
+# urlpatterns = [
+#     path("admin/", include("admin_panel.urls")),# Custom admin panel
 
+# ]
+
+urlpatterns = [
+    path("admin/",include('admin_panel.urls')),  # Main app (root)
 ]
+
+# from django.contrib import admin
+# from django.urls import include, path
+# from django.http import HttpResponse
+
+# # Simple home view
+# def home(request):
+#     return HttpResponse("Welcome to the Home Page!")
+
+# urlpatterns = [
+#     path("", home, name="home"),  # Root URL
+#     path("admin/", include("admin_panel.urls")),  # Custom admin panel
+#     path("dj-admin/", admin.site.urls),  # Optional: Keep Django's default admin panel
+# ]
