@@ -207,20 +207,32 @@
                 </div>
 
                 <!-- Signature Section -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="mb-3">
-                            <label for="signature" class="form-label">Student Signature:</label>
-                            <div id="signatureSection">
-                                <!-- This is where you would display the signature or prompt for upload -->
-                                <div class="border p-3 mb-2">
-                                    <img src="path/to/signature.jpg" alt="Your signature" class="img-fluid" style="max-height: 100px;">
-                                </div>
-                                <div class="form-text">Your signature will be applied to this form.</div>
-                            </div>
-                        </div>
-                    </div>
+<!-- Signature Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="mb-3">
+            <label for="signature" class="form-label">Student Signature:</label>
+            {% if user.signature_image %}
+                <div class="border p-3 mb-2 text-center">
+                    <img src="{{ user.signature_image.url }}" alt="Your signature" class="img-fluid" style="max-height: 100px;">
+                    <input type="hidden" name="use_existing_signature" value="true">
                 </div>
+                <div class="form-text">Your saved signature will be used on this form.</div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <p><strong>You don't have a signature on file.</strong></p>
+                    <p>Please go to the <a href="{% url 'Applications' %}" class="alert-link">Applications</a> section and upload your signature first.</p>
+                </div>
+                <!-- Disable the submit button if no signature is available -->
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.querySelector('button[type="submit"]').disabled = true;
+                    });
+                </script>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
                 <div class="row">
                     <div class="col-12">

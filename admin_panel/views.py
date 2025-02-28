@@ -222,18 +222,34 @@ def select_form_type(request):
     if "access_token" not in request.session:
         return redirect("login")
     
+    email = request.session.get("user_email")
+    if not email:
+        return redirect("login")
+    
+    user = get_object_or_404(User, email=email)
+    
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
         
         # Redirect based on the form type selection
         if form_type == 'ferpa_authorization':
-            return render(request,'FERPA_Authorization_form.html')
+            context = {
+                'user': user,
+                'active_page': 'Applications'
+            }
+            return render(request, 'FERPA_Authorization_form.html', context)
         elif form_type == 'texas_affidavit':
-            return HttpResponse('texas_affidavit_form')
+            context = {
+                'user': user,
+                'active_page': 'Applications'
+            }
+            return HttpResponse('leave_absence_form')
         elif form_type == 'leave_absence':
             return HttpResponse('leave_absence_form')
         else:
             messages.error(request, "Invalid form type selected")
+    
+    return redirect('Applications')
     
 
         

@@ -4,7 +4,7 @@ from . import views
 
 
 from django.urls import path
-from .views import show_login_page, trigger_microsoft_login, login_view, admin_dashboard,Applications, ApplicationApprovals,ApplicatiFERPAAuthorizationformons
+from .views import show_login_page, trigger_microsoft_login, login_view, admin_dashboard,Applications, ApplicationApprovals
 
 urlpatterns = [
     path("login/", show_login_page, name="login"),  # Shows login page with a button
