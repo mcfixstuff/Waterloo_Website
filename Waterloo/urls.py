@@ -15,14 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import include, path
-from admin_panel.views import homepage, rr_form, release_form
-
+from admin_panel.views import homepage, rr_form, release_form, forms_page
 
 urlpatterns = [
     path("", homepage, name="homepage"),  # Add homepage route
+    path("forms/", forms_page, name="forms_page"),  # New Forms page
     path("RRForm/", rr_form, name="rr_form"),  # Residency Reclassification Form
     path("ReleaseForm/", release_form, name="release_form"),  # Release Educational Records Form
     path("admin/",include('admin_panel.urls')),  # Main app (root)
 ]
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

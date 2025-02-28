@@ -11,6 +11,7 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h2">Welcome, {{ user_name }}!</h1>
+            <a href="/" class="btn btn-secondary">Back to Homepage</a>  <!-- ✅ New button -->
             <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
         </div>
 

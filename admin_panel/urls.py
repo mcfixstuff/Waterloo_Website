@@ -1,13 +1,11 @@
-
 from . import views
 
 
-
 from django.urls import path
-from .views import homepage, show_login_page, trigger_microsoft_login, login_view, admin_dashboard
+from .views import homepage, show_login_page, trigger_microsoft_login, login_view, admin_dashboard, forms_page
 
 urlpatterns = [
-    path("", homepage, name="homepage"),  # New homepage URL
+    
     path("login/", show_login_page, name="login"),  # Shows login page with a button
     path("login/microsoft/", trigger_microsoft_login, name="trigger_microsoft_login"),  # Starts Microsoft login
     path("auth/callback/", login_view, name="login_view"),  # Handles login response from Microsoft

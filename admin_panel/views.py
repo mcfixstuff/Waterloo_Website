@@ -1,22 +1,80 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
+import os
 from django.views.decorators.csrf import csrf_exempt
 from admin_panel.models import User
+from .forms import ReleaseForm
 import msal
 import requests
 
+def check_session(request):
+    """Helper function to check if a user is logged in"""
+    if "access_token" not in request.session:
+        return redirect("/admin/login")  # Redirect to login if not authenticated
+    return None
+
 def rr_form(request):
-    """Render the Residency Reclassification Form page."""
+    """Render the Residency Reclassification Form page, checking for login session."""
+    session_redirect = check_session(request)
+    if session_redirect:
+        return session_redirect
     return render(request, "rr_form.html")
 
 def release_form(request):
-    """Render the Authorization to Release Educational Records form page."""
-    return render(request, "release_form.html")
+    """Render the Authorization to Release Educational Records form and handle file uploads"""
+    
+    # Ensure user is authenticated via session
+    user_email = request.session.get("user_email")
+    if not user_email:
+        return redirect("login")
 
+    # Fetch user details from the database
+    current_user = User.objects.filter(email=user_email).first()
+    
+    if current_user:
+        name_parts = current_user.username.split(", ")
+        if len(name_parts) == 2:
+            last_name, first_name = name_parts[0], name_parts[1].split()[0]
+            full_name = f"{first_name} {last_name}"
+        else:
+            full_name = current_user.username
+    else:
+        full_name = "Unknown User"
+
+    if request.method == "POST":
+        form = ReleaseForm(request.POST, request.FILES)
+        if form.is_valid():
+            signature_file = request.FILES["student_signature"]
+            file_extension = os.path.splitext(signature_file.name)[1].lower()
+
+            # Ensure only PNG, JPG, and JPEG are accepted
+            if file_extension not in [".png", ".jpg", ".jpeg"]:
+                return render(request, "release_form.html", {"form": form, "error": "Invalid file format. Only PNG, JPG, and JPEG are allowed."})
+
+            # Define the file save path
+            signature_path = os.path.join(settings.MEDIA_ROOT, "signatures", signature_file.name)
+
+            # Save the file to the media directory
+            with open(signature_path, "wb+") as destination:
+                for chunk in signature_file.chunks():
+                    destination.write(chunk)
+
+            return render(request, "release_form.html", {"form": form, "message": "File uploaded successfully!"})
+
+    else:
+        form = ReleaseForm(initial={'student_name': full_name, 'student_email': user_email})
+
+    return render(request, "release_form.html", {"form": form})
+    
 def homepage(request):
     """Render the homepage."""
     return render(request, "homepage.html")
+
+def forms_page(request):
+    """Render the Forms page."""
+    return render(request, "forms.html")
+    
 
 
 # Authentication Views

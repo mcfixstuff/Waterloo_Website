@@ -14,18 +14,18 @@
         }
         .header {
             display: flex;
-            justify-content: space-between;
+            justify-content: end;
             align-items: center;
             padding: 20px;
             background-color: #333;
             color: white;
+            gap: 10px;
         }
         .header h1 {
-            margin: 0;
+            margin-right: auto;
             font-size: 24px;
         }
-        .login-button {
-            background-color: #0078D4;
+        .btn {
             color: white;
             padding: 10px 20px;
             border: none;
@@ -33,42 +33,39 @@
             text-decoration: none;
             font-size: 16px;
         }
-        .login-button:hover {
+        .btn-blue {
+            background-color: #0078D4;
+        }
+        .btn-blue:hover {
             background-color: #005a9e;
+        }
+        .btn-red {
+            background-color: #d9534f;
+        }
+        .btn-red:hover {
+            background-color: #c9302c;
         }
         .main-content {
             margin-top: 50px;
-        }
-        .main-content h1 {
-            font-size: 36px;
-            color: #333;
-        }
-        .link-container {
-            margin-top: 20px;
-        }
-        .link-container a {
-            display: block;
-            font-size: 18px;
-            color: blue;
-            text-decoration: underline;
-            margin: 10px 0;
-        }
-        .link-container a:hover {
-            color: darkblue;
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Waterloo Website</h1>
-        <a href="/admin/login" class="login-button">Login</a>
+        
+        {% if request.session.access_token %}
+            <a href="/admin/dashboard" class="btn btn-blue">Dashboard</a>
+            <a href="{% url 'logout' %}?next=/" class="btn btn-red">Logout</a>  <!-- Red Logout Button -->
+        {% else %}
+            <a href="/admin/login" class="btn btn-blue">Login</a>
+        {% endif %}
     </div>
     <div class="main-content">
         <h1>WATERLOO WEBSITE UNDER CONSTRUCTION</h1>
-        
+
         <div class="link-container">
-            <a href="/RRForm">Residency Reclassification Form</a>
-            <a href="/ReleaseForm">Authorization to Release Educational Records</a>
+            <a href="/forms" class="btn btn-blue">Go to Forms</a>
         </div>
     </div>
 </body>
