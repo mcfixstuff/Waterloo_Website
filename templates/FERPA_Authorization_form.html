@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FERPA Authorization Form</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">AUTHORIZATION TO RELEASE EDUCATIONAL RECORDS</h3>
+            <p class="mb-0">Form No. OGC-SF-2006-02</p>
+            <small>Family Educational Rights and Privacy Act of 1974 as Amended (FERPA)</small>
+        </div>
+        <div class="card-body">
+            <form method="post" action="" id="ferpaForm">
+                
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <p>I <input type="text" class="form-control d-inline-block w-50" name="student_name" required> hereby voluntarily authorize officials in the</p>
+                        <p>University of Houston - 
+                            <select class="form-select d-inline-block w-50" name="university_division" required>
+                                <option value="" selected disabled>Click Here to Select One</option>
+                                <option value="Main Campus">Main Campus</option>
+                                <option value="Downtown">Downtown</option>
+                                <option value="Clear Lake">Clear Lake</option>
+                                <option value="Victoria">Victoria</option>
+                            </select> 
+                            identified below to disclose personally identifiable information from my educational records. (Please check the box or boxes that apply):
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="Office of the University Registrar" id="registrar">
+                            <label class="form-check-label" for="registrar">Office of the University Registrar</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="Scholarships and Financial Aid" id="financial_aid">
+                            <label class="form-check-label" for="financial_aid">Scholarships and Financial Aid</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="Student Financial Services" id="financial_services">
+                            <label class="form-check-label" for="financial_services">Student Financial Services</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="Undergraduate Scholars @ UH (formally USD)" id="scholars">
+                            <label class="form-check-label" for="scholars">Undergraduate Scholars @ UH (formally USD)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="University Advancement" id="advancement">
+                            <label class="form-check-label" for="advancement">University Advancement</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="Dean of Students Office" id="dean">
+                            <label class="form-check-label" for="dean">Dean of Students Office</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="Other" id="other_office">
+                            <label class="form-check-label" for="other_office">Other (Please Specify)</label>
+                            <input type="text" class="form-control mt-1" name="other_office_text" id="other_office_text" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <p>Specifically, I authorize disclosure of the following information or category of information. (Please check the box or boxes that apply):</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Academic Advising Profile/Information" id="advising">
+                            <label class="form-check-label" for="advising">Academic Advising Profile/Information</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Academic Records" id="academic">
+                            <label class="form-check-label" for="academic">Academic Records</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="All University Records" id="all_records">
+                            <label class="form-check-label" for="all_records">All University Records</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Billing/Financial Aid" id="billing">
+                            <label class="form-check-label" for="billing">Billing/Financial Aid</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Disciplinary" id="disciplinary">
+                            <label class="form-check-label" for="disciplinary">Disciplinary</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Grades/Transcripts" id="grades">
+                            <label class="form-check-label" for="grades">Grades/Transcripts</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Housing" id="housing">
+                            <label class="form-check-label" for="housing">Housing</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Photos" id="photos">
+                            <label class="form-check-label" for="photos">Photos</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Scholarship and/or Honors" id="scholarship">
+                            <label class="form-check-label" for="scholarship">Scholarship and/or Honors</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Other" id="other_info">
+                            <label class="form-check-label" for="other_info">Other (Please Specify)</label>
+                            <input type="text" class="form-control mt-1" name="other_info_text" id="other_info_text" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="release_to" class="form-label">This information may be released to:</label>
+                            <input type="text" class="form-control" id="release_to" name="release_to" required>
+                            <small class="form-text text-muted">[Print Name(s) of Individual(s) To Whom University May Disclose Information]</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="additional_individuals" class="form-label">List Additional Individuals if Necessary:</label>
+                            <input type="text" class="form-control" id="additional_individuals" name="additional_individuals">
+                            <small class="form-text text-muted">for the purpose of informing:</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Family" id="family">
+                            <label class="form-check-label" for="family">Family</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Educational Institution" id="educational">
+                            <label class="form-check-label" for="educational">Educational Institution</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Honor or Award" id="honor">
+                            <label class="form-check-label" for="honor">Honor or Award</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Employer/Prospective Employer" id="employer">
+                            <label class="form-check-label" for="employer">Employer/Prospective Employer</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Public or Media of Scholarship" id="public">
+                            <label class="form-check-label" for="public">Public or Media of Scholarship</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Other" id="other_purpose">
+                            <label class="form-check-label" for="other_purpose">Other (Please Specify)</label>
+                            <input type="text" class="form-control mt-1" name="other_purpose_text" id="other_purpose_text" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Please provide a password to obtain information via the phone:</label>
+                            <input type="text" class="form-control" id="password" name="password" maxlength="10" required>
+                            <small class="form-text text-muted">The password should not contain more than ten (10) letters. You must provide the password to the individuals or agencies listed above. The University will not release information to the caller if the caller does not have the password. A new form must be completed to change your password.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <p class="mb-0"><strong>This is to attest that I am the student signing this form. I understand the information may be released orally or in the form of copies of written records, as preferred by the requester. This authorization will remain in effect from the date it is executed until revoked by me, in writing, and delivered to Department(s) identified above.</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="peoplesoft_id" class="form-label">PeopleSoft I.D. Number:</label>
+                            <input type="text" class="form-control" id="peoplesoft_id" name="peoplesoft_id" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="student_name_print" class="form-label">Student Name [please print]:</label>
+                            <input type="text" class="form-control" id="student_name_print" name="student_name_print" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Date:</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signature Section -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="signature" class="form-label">Student Signature:</label>
+                            <div id="signatureSection">
+                                <!-- This is where you would display the signature or prompt for upload -->
+                                <div class="border p-3 mb-2">
+                                    <img src="path/to/signature.jpg" alt="Your signature" class="img-fluid" style="max-height: 100px;">
+                                </div>
+                                <div class="form-text">Your signature will be applied to this form.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">Please Retain a Copy for your Records<br>Document may be Submitted to Registrar's Office</small>
+                            <button type="submit" class="btn btn-primary">Submit Form</button>
+                        </div>
+                        <small class="text-muted d-block mt-2">FERPA Authorization Form<br>OGC-SF-2006-02 Revised 11.10.2022<br>Page 1 of 1</small>
+                        <small class="text-muted d-block mt-2 fst-italic">Note: Modification of this Form requires approval of OGC</small>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-fill student name in the print field
+        const studentNameInput = document.querySelector('input[name="student_name"]');
+        const studentNamePrintInput = document.querySelector('input[name="student_name_print"]');
+        
+        studentNameInput.addEventListener('input', function() {
+            studentNamePrintInput.value = this.value;
+        });
+
+        // Show/hide "Other" text fields
+        const toggleOtherField = function(checkboxId, textFieldId) {
+            const checkbox = document.getElementById(checkboxId);
+            const textField = document.getElementById(textFieldId);
+            
+            checkbox.addEventListener('change', function() {
+                textField.style.display = this.checked ? 'block' : 'none';
+            });
+        };
+        
+        toggleOtherField('other_office', 'other_office_text');
+        toggleOtherField('other_info', 'other_info_text');
+        toggleOtherField('other_purpose', 'other_purpose_text');
+    });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
