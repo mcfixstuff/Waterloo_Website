@@ -183,13 +183,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="#" method="post">
+                    <form action="{% url 'select_form_type' %}" method="post">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="formType" class="form-label">Form Type</label>
                             <select class="form-select" id="formType" name="form_type" required>
                                 <option value="" selected disabled>Select a form</option>
-                                <option value="course_add_drop">Course Add/Drop Form</option>
+                                <option value="ferpa_authorization">Authorization to Release Educational Records</option>
+                                <option value="texas_affidavit">Texas Residency Affidavit</option>
                                 <option value="leave_absence">Leave of Absence Request</option>
                             </select>
                         </div>

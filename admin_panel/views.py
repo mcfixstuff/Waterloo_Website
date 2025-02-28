@@ -213,6 +213,34 @@ def ApplicationApprovals(request):
     }
     return render(request, "admin_panel/ApplicationApprovalsDashboard.html",context)
 
+
+
+
+def ApplicatiFERPAAuthorizationformons(request):
+    """Render the FERPA_Authorization_form"""
+    return render(request, "FERPA_Authorization_form.html")
+
+
+
+def select_form_type(request):
+    """Handle form type selection from the modal."""
+    if "access_token" not in request.session:
+        return redirect("login")
+    
+    if request.method == 'POST':
+        form_type = request.POST.get('form_type')
+        
+        # Redirect based on the form type selection
+        if form_type == 'ferpa_authorization':
+            return render(request,'FERPA_Authorization_form.html')
+        elif form_type == 'texas_affidavit':
+            return HttpResponse('texas_affidavit_form')
+        elif form_type == 'leave_absence':
+            return HttpResponse('leave_absence_form')
+        else:
+            messages.error(request, "Invalid form type selected")
+    
+
         
 
 

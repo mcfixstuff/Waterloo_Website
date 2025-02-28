@@ -4,7 +4,7 @@ from . import views
 
 
 from django.urls import path
-from .views import show_login_page, trigger_microsoft_login, login_view, admin_dashboard,Applications, ApplicationApprovals
+from .views import show_login_page, trigger_microsoft_login, login_view, admin_dashboard,Applications, ApplicationApprovals,ApplicatiFERPAAuthorizationformons
 
 urlpatterns = [
     path("login/", show_login_page, name="login"),  # Shows login page with a button
@@ -16,6 +16,10 @@ urlpatterns = [
     path("change-role/<int:user_id>/", views.change_user_role, name="change_user_role"),  # ✅ New route
     path("ApplicationApprovals/", views.ApplicationApprovals, name="ApplicationApprovals"),  # ✅ New route
     path("Applications/", views.Applications, name="Applications"),  # ✅ New route
+    
+    
+    # form sellection
+    path("select-form/", views.select_form_type, name="select_form_type"),
     
         # Add this new URL for signature upload
     path("upload-signature/", views.upload_signature, name="upload_signature"),
