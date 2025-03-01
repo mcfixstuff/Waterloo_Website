@@ -206,12 +206,27 @@ def Applications(request):
 
 
 def ApplicationApprovals(request):
-    """Render the ApplicationApprovals"""
+    """Render the ApplicationApprovals view with permission check."""
+    if "access_token" not in request.session:
+        return redirect("login")
+    
+    email = request.session.get("user_email")
+    if not email:
+        return redirect("login")
+    
+    # Get the current user
+    current_user = User.objects.filter(email=email).first()
+    
+    # Check if the user is a superuser or manager
+    if not current_user or (current_user.role != "superuser" and current_user.role != "manager"):
+        return HttpResponseForbidden("You do not have permission to access this page.")
+    
     context = {
         'active_page': 'ApplicationApprovals',
+        'user': current_user
         # other context data
     }
-    return render(request, "admin_panel/ApplicationApprovalsDashboard.html",context)
+    return render(request, "admin_panel/ApplicationApprovalsDashboard.html", context)
 
 
 

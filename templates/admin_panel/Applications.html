@@ -20,9 +20,11 @@
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{% url 'admin_dashboard' %}">Dashboard</a>
                     </li>
+                    {% if user.role == 'superuser' or user.role == 'manager' %}
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'ApplicationApprovals' %}active{% endif %}" href="{% url 'ApplicationApprovals' %}">Application Approvals</a>
                     </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'Applications' %}active{% endif %}" href="{% url 'Applications' %}">Applications</a>
                     </li>
@@ -36,11 +38,18 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h2">Application Management</h1>
             <div>
-                <a href="#" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#newApplicationModal">
+                <!-- Changed to button with an ID for JavaScript -->
+                <button type="button" class="btn btn-success me-2" id="checkSignatureBtn">
                     <i class="fas fa-plus-circle"></i> New Application
-                </a>
+                </button>
                 <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
             </div>
+        </div>
+
+        <!-- Signature Required Alert (Hidden by default) -->
+        <div class="alert alert-warning alert-dismissible fade show d-none" role="alert" id="signatureRequiredAlert">
+            <strong>Signature Required!</strong> You must upload your signature before creating a new application.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
         <!-- User Info & Signature -->
@@ -241,5 +250,38 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Add JavaScript to check for signature -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get reference to button and create modal instances
+        const checkSignatureBtn = document.getElementById('checkSignatureBtn');
+        const signatureRequiredAlert = document.getElementById('signatureRequiredAlert');
+        
+        // Check if user has signature using Django template variable
+        const hasSignature = {% if user.signature_image %}true{% else %}false{% endif %};
+        
+        // Add event listener to the button
+        checkSignatureBtn.addEventListener('click', function() {
+            if (hasSignature) {
+                // Show the application modal if signature exists
+                var newApplicationModal = new bootstrap.Modal(document.getElementById('newApplicationModal'));
+                newApplicationModal.show();
+            } else {
+                // Show alert and open signature modal if no signature
+                signatureRequiredAlert.classList.remove('d-none');
+                
+                // Scroll to the alert
+                signatureRequiredAlert.scrollIntoView({ behavior: 'smooth' });
+                
+                // Open signature modal after short delay
+                setTimeout(function() {
+                    var signatureModal = new bootstrap.Modal(document.getElementById('signatureModal'));
+                    signatureModal.show();
+                }, 1000);
+            }
+        });
+    });
+    </script>
 </body>
 </html>
