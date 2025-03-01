@@ -7,6 +7,10 @@ from admin_panel.models import User
 import msal
 import requests
 from .forms import UserSignatureForm,FERPAForm
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import os
+
 
 # Authentication Views
 def show_login_page(request):
@@ -187,7 +191,7 @@ def upload_signature(request):
 
 # 3. Update the Applications view to include the signature form
 def Applications(request):
-    """Render the Applications page with signature form."""
+    """Render the Applications page with signature form and FERPA forms."""
     if "access_token" not in request.session:
         return redirect("login")
     
@@ -198,10 +202,14 @@ def Applications(request):
     user = get_object_or_404(User, email=email)
     signature_form = UserSignatureForm(instance=user)
     
+    # Fetch FERPA forms for this user
+    ferpa_forms = FERPAForm.objects.filter(user=user).order_by('-updated_at')
+    
     context = {
         'active_page': 'Applications',
         'user': user,
-        'signature_form': signature_form
+        'signature_form': signature_form,
+        'ferpa_forms': ferpa_forms  # Add this line to pass FERPA forms to the template
     }
     return render(request, "admin_panel/Applications.html", context)
 
@@ -305,12 +313,85 @@ def save_ferpa_form(request):
         ferpa_form.save()
         
         # Return a success response
-        return HttpResponse("Form data saved successfully!")
+        return redirect('Applications')
     
     # If not POST, redirect to home
     return redirect('Applications')
-        
+
+def preview_application(request, form_id):
+    """View function to display a read-only preview of a FERPA form."""
+    ferpa_form = get_object_or_404(FERPAForm, id=form_id)
+    
+    # Check if the user is authorized to view the form
+    current_user = User.objects.filter(email=request.session.get("user_email")).first()
+    if not current_user or (current_user != ferpa_form.user and current_user.role not in ["superuser", "manager"]):
+        return HttpResponseForbidden("You do not have permission to view this application.")
+
+    context = {
+        "ferpa_form": ferpa_form,
+        # If user has a signature, pass its URL to the template
+        "user_signature": ferpa_form.user.signature_image.url if ferpa_form.user.signature_image else None,
+    }
+    return render(request, "preview_application.html", context)
 
 
+def generate_pdf(request, form_id):
+    """Generate and return a simple PDF using ReportLab with signature image."""
+    
+    # Get FERPA form data
+    ferpa_form = get_object_or_404(FERPAForm, id=form_id)
+    
+    # Create a response with PDF content type
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="ferpa_form_{form_id}.pdf"'
 
+    # Create PDF object
+    p = canvas.Canvas(response, pagesize=letter)
+    width, height = letter
 
+    # Set font
+    p.setFont("Helvetica", 12)
+
+    # Title
+    p.drawString(100, height - 50, "FERPA Authorization Form")
+    p.drawString(100, height - 70, "Family Educational Rights and Privacy Act (FERPA)")
+    p.line(100, height - 80, 500, height - 80)
+
+    # Add content dynamically
+    p.drawString(100, height - 100, f"Student Name: {ferpa_form.student_name}")
+    p.drawString(100, height - 120, f"University Division: {ferpa_form.university_division}")
+    p.drawString(100, height - 140, f"PeopleSoft ID: {ferpa_form.peoplesoft_id}")
+
+    p.drawString(100, height - 160, f"Selected Offices: {', '.join(ferpa_form.offices)}")
+    p.drawString(100, height - 180, f"Information Categories: {', '.join(ferpa_form.info_categories)}")
+
+    p.drawString(100, height - 200, f"Released To: {ferpa_form.release_to}")
+    p.drawString(100, height - 220, f"Additional Individuals: {ferpa_form.additional_individuals or 'None'}")
+
+    p.drawString(100, height - 240, f"Purpose: {', '.join(ferpa_form.purposes)}")
+    p.drawString(100, height - 260, f"Password for Phone Verification: {ferpa_form.password}")
+
+    # Date
+    p.drawString(100, height - 280, f"Date: {ferpa_form.form_date}")
+
+    # Signature Section
+    p.drawString(100, height - 320, "Student Signature:")
+
+    # Check if the user has a signature image
+    if ferpa_form.user.signature_image:
+        signature_path = ferpa_form.user.signature_image.path
+        if os.path.exists(signature_path):
+            p.drawImage(signature_path, 100, height - 380, width=150, height=50)
+        else:
+            p.drawString(100, height - 360, "Signature not found.")
+    else:
+        p.drawString(100, height - 360, "No signature on file.")
+
+    # Footer
+    p.drawString(100, height - 400, "This is a digital document generated from the FERPA system.")
+
+    # Save PDF
+    p.showPage()
+    p.save()
+
+    return response

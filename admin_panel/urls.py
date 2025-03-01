@@ -4,7 +4,7 @@ from . import views
 
 
 from django.urls import path
-from .views import show_login_page, trigger_microsoft_login, login_view, admin_dashboard,Applications, ApplicationApprovals
+from .views import show_login_page, trigger_microsoft_login, login_view, admin_dashboard,Applications, ApplicationApprovals,preview_application,generate_pdf
 
 urlpatterns = [
     path("login/", show_login_page, name="login"),  # Shows login page with a button
@@ -27,4 +27,8 @@ urlpatterns = [
     
     # storing data from from 1 
     path('save-ferpa-form/', views.save_ferpa_form, name='save_ferpa_form'),
+    
+    path("preview_application/<int:form_id>/", preview_application, name="preview_application"),
+    
+    path("ferpa/<int:form_id>/pdf/", generate_pdf, name="generate_pdf"),
 ]

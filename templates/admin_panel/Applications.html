@@ -98,90 +98,65 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Course Add/Drop Form</td>
-                                <td>Feb 15, 2025</td>
-                                <td>
-                                    <span class="badge bg-warning">Pending Approval</span>
-                                </td>
-                                <td>Dr. Smith (Advisor)</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="#" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-info">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Leave of Absence Request</td>
-                                <td>Jan 20, 2025</td>
-                                <td>
-                                    <span class="badge bg-success">Approved</span>
-                                </td>
-                                <td>Dr. Johnson (Department Chair)</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="#" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-info">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Course Add/Drop Form</td>
-                                <td>Feb 25, 2025</td>
-                                <td>
-                                    <span class="badge bg-secondary">Draft</span>
-                                </td>
-                                <td>N/A</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="#" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-secondary">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-info">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Leave of Absence Request</td>
-                                <td>Feb 10, 2025</td>
-                                <td>
-                                    <span class="badge bg-danger">Returned for Revision</span>
-                                </td>
-                                <td>Dr. Williams (Advisor)</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="#" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-secondary">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-info">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                            {% if ferpa_forms %}
+                                {% for form in ferpa_forms %}
+                                    <tr>
+                                        <td>FERPA Authorization</td>
+                                        <td>
+                                            {% if form.submitted_at %}
+                                                {{ form.submitted_at|date:"M d, Y" }}
+                                            {% else %}
+                                                Not submitted
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if form.status == 'draft' %}
+                                                <span class="badge bg-secondary">Draft</span>
+                                            {% elif form.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending Approval</span>
+                                            {% elif form.status == 'approved' %}
+                                                <span class="badge bg-success">Approved</span>
+                                            {% elif form.status == 'returned' %}
+                                                <span class="badge bg-danger">Returned for Revision</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if form.reviewer %}
+                                                {{ form.reviewer.username }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'preview_application' form.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if form.status == 'draft' or form.status == 'returned' %}
+                                                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                {% endif %}
+                                                <a href="{% url 'generate_pdf' form.id %}" class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No applications found. Click "New Application" to create one.</td>
+                                </tr>
+                            {% endif %}
+        
+                            <!-- for testing -->
+
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- New Application Modal -->
     <div class="modal fade" id="newApplicationModal" tabindex="-1" aria-labelledby="newApplicationModalLabel" aria-hidden="true">
