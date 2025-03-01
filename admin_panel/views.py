@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from admin_panel.models import User
 import msal
 import requests
-from .forms import UserSignatureForm
+from .forms import UserSignatureForm,FERPAForm
 
 # Authentication Views
 def show_login_page(request):
@@ -266,7 +267,48 @@ def select_form_type(request):
     
     return redirect('Applications')
     
+    
+    
 
+
+def save_ferpa_form(request):
+    """Simple view to save FERPA form data to database"""
+    if "access_token" not in request.session:
+        return redirect("login")
+    
+    email = request.session.get("user_email")
+    if not email:
+        return redirect("login")
+    
+    user = get_object_or_404(User, email=email)
+    
+    if request.method == 'POST':
+        # Create a new form instance
+        ferpa_form = FERPAForm(
+            user=user,
+            student_name=request.POST.get('student_name', ''),
+            university_division=request.POST.get('university_division', ''),
+            peoplesoft_id=request.POST.get('peoplesoft_id', ''),
+            offices=request.POST.getlist('offices[]', []),
+            info_categories=request.POST.getlist('info_categories[]', []),
+            release_to=request.POST.get('release_to', ''),
+            additional_individuals=request.POST.get('additional_individuals', ''),
+            purposes=request.POST.getlist('purposes[]', []),
+            password=request.POST.get('password', ''),
+            form_date=request.POST.get('form_date', timezone.now().date()),
+            other_office_text=request.POST.get('other_office_text', ''),
+            other_info_text=request.POST.get('other_info_text', ''),
+            other_purpose_text=request.POST.get('other_purpose_text', ''),
+            status='pending',  # Set as pending by default
+            submitted_at=timezone.now()
+        )
+        ferpa_form.save()
+        
+        # Return a success response
+        return HttpResponse("Form data saved successfully!")
+    
+    # If not POST, redirect to home
+    return redirect('Applications')
         
 
 

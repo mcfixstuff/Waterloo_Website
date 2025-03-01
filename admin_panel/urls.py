@@ -23,4 +23,8 @@ urlpatterns = [
     
         # Add this new URL for signature upload
     path("upload-signature/", views.upload_signature, name="upload_signature"),
+    
+    
+    # storing data from from 1 
+    path('save-ferpa-form/', views.save_ferpa_form, name='save_ferpa_form'),
 ]

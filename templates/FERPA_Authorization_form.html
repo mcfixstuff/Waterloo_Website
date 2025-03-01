@@ -17,11 +17,22 @@
             <small>Family Educational Rights and Privacy Act of 1974 as Amended (FERPA)</small>
         </div>
         <div class="card-body">
-            <form method="post" action="" id="ferpaForm">
+            <form method="post" action="{% url 'save_ferpa_form' %}" id="ferpaForm">
+                {% csrf_token %}
+                
+                <!-- Display form validation errors -->
+                {% if messages %}
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">Please correct the following errors:</h5>
+                    {% for message in messages %}
+                        <p class="mb-0">{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 
                 <div class="row mb-4">
                     <div class="col-12">
-                        <p>I <input type="text" class="form-control d-inline-block w-50" name="student_name" required> hereby voluntarily authorize officials in the</p>
+                        <p>I <input type="text" class="form-control d-inline-block w-50" name="student_name" value="{{ user.username }}" required> hereby voluntarily authorize officials in the</p>
                         <p>University of Houston - 
                             <select class="form-select d-inline-block w-50" name="university_division" required>
                                 <option value="" selected disabled>Click Here to Select One</option>
@@ -200,39 +211,38 @@
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="date" class="form-label">Date:</label>
-                            <input type="date" class="form-control" id="date" name="date" required>
+                            <label for="form_date" class="form-label">Date:</label>
+                            <input type="date" class="form-control" id="form_date" name="form_date" required>
                         </div>
                     </div>
                 </div>
 
                 <!-- Signature Section -->
-<!-- Signature Section -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="mb-3">
-            <label for="signature" class="form-label">Student Signature:</label>
-            {% if user.signature_image %}
-                <div class="border p-3 mb-2 text-center">
-                    <img src="{{ user.signature_image.url }}" alt="Your signature" class="img-fluid" style="max-height: 100px;">
-                    <input type="hidden" name="use_existing_signature" value="true">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="signature" class="form-label">Student Signature:</label>
+                            {% if user.signature_image %}
+                                <div class="border p-3 mb-2 text-center">
+                                    <img src="{{ user.signature_image.url }}" alt="Your signature" class="img-fluid" style="max-height: 100px;">
+                                    <input type="hidden" name="use_existing_signature" value="true">
+                                </div>
+                                <div class="form-text">Your saved signature will be used on this form.</div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <p><strong>You don't have a signature on file.</strong></p>
+                                    <p>Please go to the <a href="{% url 'Applications' %}" class="alert-link">Applications</a> section and upload your signature first.</p>
+                                </div>
+                                <!-- Disable the submit button if no signature is available -->
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        document.querySelector('button[type="submit"]').disabled = true;
+                                    });
+                                </script>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                <div class="form-text">Your saved signature will be used on this form.</div>
-            {% else %}
-                <div class="alert alert-warning">
-                    <p><strong>You don't have a signature on file.</strong></p>
-                    <p>Please go to the <a href="{% url 'Applications' %}" class="alert-link">Applications</a> section and upload your signature first.</p>
-                </div>
-                <!-- Disable the submit button if no signature is available -->
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        document.querySelector('button[type="submit"]').disabled = true;
-                    });
-                </script>
-            {% endif %}
-        </div>
-    </div>
-</div>
 
                 <div class="row">
                     <div class="col-12">
@@ -258,6 +268,11 @@
         studentNameInput.addEventListener('input', function() {
             studentNamePrintInput.value = this.value;
         });
+
+        // Initialize the student_name_print with student_name value
+        if (studentNameInput.value) {
+            studentNamePrintInput.value = studentNameInput.value;
+        }
 
         // Show/hide "Other" text fields
         const toggleOtherField = function(checkboxId, textFieldId) {
