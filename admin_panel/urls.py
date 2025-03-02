@@ -4,7 +4,7 @@ from . import views
 
 
 from django.urls import path
-from .views import show_login_page, trigger_microsoft_login, login_view, admin_dashboard,Applications, ApplicationApprovals,preview_application,generate_pdf
+from .views import show_login_page, trigger_microsoft_login, login_view, admin_dashboard,Applications, ApplicationApprovals,preview_application,generate_pdf,approve_ferpa_form,return_ferpa_form
 
 urlpatterns = [
     path("login/", show_login_page, name="login"),  # Shows login page with a button
@@ -31,4 +31,11 @@ urlpatterns = [
     path("preview_application/<int:form_id>/", preview_application, name="preview_application"),
     
     path("ferpa/<int:form_id>/pdf/", generate_pdf, name="generate_pdf"),
+    
+    
+    path("approve_form/<int:form_id>/", approve_ferpa_form, name="approve_form"),
+    
+    path("return_form/<int:form_id>/", return_ferpa_form, name="return_form"),
+    
+    path("edit-ferpa/<int:form_id>/", views.edit_ferpa_form, name="edit_ferpa_form"),
 ]

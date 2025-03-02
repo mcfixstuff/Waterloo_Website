@@ -3,7 +3,7 @@ Python 3.8+
 PostgreSQL
 pip install Pillow # file upload 
 
-pip install weasyprint # pdf
+pip install reportlab # pdf
 
 
 git clone <your-repo-url>

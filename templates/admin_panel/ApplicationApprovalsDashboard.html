@@ -38,53 +38,57 @@
             <a href="#" class="btn btn-danger">Logout</a>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3 mb-3 mb-md-0">
-                <div class="card bg-primary text-white">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title mb-0">Pending</h5>
-                            <p class="card-text fs-1 fw-bold mb-0">12</p>
-                        </div>
-                        <i class="fas fa-hourglass-half fa-2x"></i>
-                    </div>
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3 mb-md-0">
+        <div class="card bg-primary text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-0">Pending</h5>
+                    <!-- use {{ pending_count }} -->
+                    <p class="card-text fs-1 fw-bold mb-0">{{ pending_count }}</p>
                 </div>
-            </div>
-            <div class="col-md-3 mb-3 mb-md-0">
-                <div class="card bg-success text-white">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title mb-0">Approved</h5>
-                            <p class="card-text fs-1 fw-bold mb-0">45</p>
-                        </div>
-                        <i class="fas fa-check-circle fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3 mb-md-0">
-                <div class="card bg-danger text-white">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title mb-0">Returned</h5>
-                            <p class="card-text fs-1 fw-bold mb-0">8</p>
-                        </div>
-                        <i class="fas fa-undo fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3 mb-md-0">
-                <div class="card bg-info text-white">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title mb-0">Today</h5>
-                            <p class="card-text fs-1 fw-bold mb-0">6</p>
-                        </div>
-                        <i class="fas fa-calendar-day fa-2x"></i>
-                    </div>
-                </div>
+                <i class="fas fa-hourglass-half fa-2x"></i>
             </div>
         </div>
+    </div>
+    <div class="col-md-3 mb-3 mb-md-0">
+        <div class="card bg-success text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-0">Approved</h5>
+                    <!-- use {{ approved_count }} -->
+                    <p class="card-text fs-1 fw-bold mb-0">{{ approved_count }}</p>
+                </div>
+                <i class="fas fa-check-circle fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3 mb-md-0">
+        <div class="card bg-danger text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-0">Returned</h5>
+                    <!-- use {{ returned_count }} -->
+                    <p class="card-text fs-1 fw-bold mb-0">{{ returned_count }}</p>
+                </div>
+                <i class="fas fa-undo fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3 mb-md-0">
+        <div class="card bg-info text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-0">Today</h5>
+                    <!-- use {{ today_count }} -->
+                    <p class="card-text fs-1 fw-bold mb-0">{{ today_count }}</p>
+                </div>
+                <i class="fas fa-calendar-day fa-2x"></i>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
@@ -103,180 +107,104 @@
                     <table class="table table-striped table-hover">
                         <thead>
                             <tr>
-                                <th>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="selectAll">
-                                    </div>
-                                </th>
                                 <th>Form ID</th>
                                 <th>Form Type</th>
                                 <th>Submitted By</th>
                                 <th>Submission Date</th>
-                                <th>Approval Step</th>
-                                <th>Urgency</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="selectedApprovals">
-                                    </div>
-                                </td>
-                                <td>APP-2025-0312</td>
-                                <td>Course Add/Drop Form</td>
-                                <td>Jane Smith</td>
-                                <td>Feb 26, 2025</td>
-                                <td>1 of 3</td>
-                                <td><span class="badge bg-danger">High</span></td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewModal">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#approveModal">
-                                            <i class="fas fa-check"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#returnModal">
-                                            <i class="fas fa-undo"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="selectedApprovals">
-                                    </div>
-                                </td>
-                                <td>APP-2025-0311</td>
-                                <td>FERPA Authorization</td>
-                                <td>Michael Johnson</td>
-                                <td>Feb 25, 2025</td>
-                                <td>2 of 2</td>
-                                <td><span class="badge bg-warning">Medium</span></td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewModal">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#approveModal">
-                                            <i class="fas fa-check"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#returnModal">
-                                            <i class="fas fa-undo"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="selectedApprovals">
-                                    </div>
-                                </td>
-                                <td>APP-2025-0309</td>
-                                <td>Leave of Absence Request</td>
-                                <td>Robert Williams</td>
-                                <td>Feb 24, 2025</td>
-                                <td>1 of 3</td>
-                                <td><span class="badge bg-success">Low</span></td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewModal">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#approveModal">
-                                            <i class="fas fa-check"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#returnModal">
-                                            <i class="fas fa-undo"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="selectedApprovals">
-                                    </div>
-                                </td>
-                                <td>APP-2025-0308</td>
-                                <td>Course Add/Drop Form</td>
-                                <td>Emily Davis</td>
-                                <td>Feb 24, 2025</td>
-                                <td>2 of 3</td>
-                                <td><span class="badge bg-warning">Medium</span></td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewModal">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#approveModal">
-                                            <i class="fas fa-check"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#returnModal">
-                                            <i class="fas fa-undo"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                            {% for form in pending_forms %}
+                                <tr>
+                                    <td>{{ form.id }}</td>
+                                    <td>FERPA Authorization</td>
+                                    <td>{{ form.user.username }}</td>
+                                    <td>
+                                        {% if form.submitted_at %}
+                                            {{ form.submitted_at|date:"M d, Y" }}
+                                        {% else %}
+                                            <span class="text-muted">Not submitted</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <!-- Existing Preview button -->
+                                            <a href="{% url 'preview_application' form.id %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                               <i class="fas fa-eye"></i>
+                                            </a>
+        
+                                           <!-- Approve button -->
+<a href="{% url 'approve_form' form.id %}"
+class="btn btn-sm btn-outline-success">
+<i class="fas fa-check"></i>
+</a>
+                                            
+                                            <!-- Return button (optional) -->
+<!-- Return button -->
+<a href="{% url 'return_form' form.id %}" class="btn btn-sm btn-outline-danger">
+    <i class="fas fa-undo"></i>
+</a>
+        
+                                            <!-- New Download PDF button (change 'download_pdf' to your actual view name) -->
+                                            <a href="{% url 'generate_pdf' form.id %}"
+                                               class="btn btn-sm btn-outline-info">
+                                               <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No pending applications found.</td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
-                </div>
-                <div class="d-flex justify-content-start mt-3">
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#bulkApproveModal">Approve Selected</button>
                 </div>
             </div>
         </div>
 
         <!-- Recent Activity -->
-        <div class="card">
-            <div class="card-header bg-white">
-                <h3 class="h5 mb-0">Recent Activity</h3>
-            </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            <span class="fw-bold">Approved:</span> Course Add/Drop Form for James Wilson
-                        </div>
-                        <span class="text-muted small">Today, 10:23 AM</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <i class="fas fa-undo text-danger me-2"></i>
-                            <span class="fw-bold">Returned:</span> Leave of Absence Request for Sarah Thompson
-                        </div>
-                        <span class="text-muted small">Today, 9:45 AM</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            <span class="fw-bold">Approved:</span> FERPA Authorization for David Lee
-                        </div>
-                        <span class="text-muted small">Yesterday, 3:30 PM</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            <span class="fw-bold">Approved:</span> Course Add/Drop Form for Jennifer Adams
-                        </div>
-                        <span class="text-muted small">Yesterday, 1:15 PM</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <i class="fas fa-undo text-danger me-2"></i>
-                            <span class="fw-bold">Returned:</span> FERPA Authorization for Ryan Martinez
-                        </div>
-                        <span class="text-muted small">Feb 26, 2025</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
+<!-- Recent Activity -->
+<div class="card">
+    <div class="card-header bg-white">
+        <h3 class="h5 mb-0">Recent Activity</h3>
     </div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            {% for form in recent_forms %}
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <div>
+                        {% if form.status == 'approved' %}
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span class="fw-bold">Approved:</span>
+                        {% elif form.status == 'returned' %}
+                            <i class="fas fa-undo text-danger me-2"></i>
+                            <span class="fw-bold">Returned:</span>
+                        {% endif %}
+
+                        <!-- E.g., use form.student_name or user.username -->
+                        FERPA Authorization for {{ form.student_name }}
+                    </div>
+                    <span class="text-muted small">
+                        <!-- Show the reviewed_at date if it exists, else fallback to updated_at -->
+                        {% if form.reviewed_at %}
+                            {{ form.reviewed_at|date:"M d, Y, g:i A" }}
+                        {% else %}
+                            {{ form.updated_at|date:"M d, Y, g:i A" }}
+                        {% endif %}
+                    </span>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-center">
+                    No recent activity.
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 
     <!-- View Application Modal -->
     <div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">

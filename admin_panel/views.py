@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from admin_panel.models import User
 import msal
+from django.db.models import Q
 import requests
 from .forms import UserSignatureForm,FERPAForm
 from reportlab.lib.pagesizes import letter
@@ -213,7 +214,6 @@ def Applications(request):
     }
     return render(request, "admin_panel/Applications.html", context)
 
-
 def ApplicationApprovals(request):
     """Render the ApplicationApprovals view with permission check."""
     if "access_token" not in request.session:
@@ -223,17 +223,39 @@ def ApplicationApprovals(request):
     if not email:
         return redirect("login")
     
-    # Get the current user
     current_user = User.objects.filter(email=email).first()
-    
-    # Check if the user is a superuser or manager
-    if not current_user or (current_user.role != "superuser" and current_user.role != "manager"):
+    if not current_user or (current_user.role not in ["superuser", "manager"]):
         return HttpResponseForbidden("You do not have permission to access this page.")
-    
+
+    # 1) Stats
+    pending_count = FERPAForm.objects.filter(status='pending').count()
+    approved_count = FERPAForm.objects.filter(status='approved').count()
+    returned_count = FERPAForm.objects.filter(status='returned').count()
+
+    # For "Today", let's assume we want forms submitted today 
+    # (i.e., 'submitted_at' is today's date).
+    today = timezone.now().date()
+    today_count = FERPAForm.objects.filter(
+        submitted_at__date=today
+    ).count()
+
+    # 2) Pending forms for the table (as before)
+    pending_forms = FERPAForm.objects.filter(status='pending').order_by('-created_at')
+
+    # 3) Recent forms for the "Recent Activity" (as before)
+    recent_forms = FERPAForm.objects.filter(
+        status__in=["approved", "returned"]
+    ).order_by('-reviewed_at', '-updated_at')[:5]
+
     context = {
         'active_page': 'ApplicationApprovals',
-        'user': current_user
-        # other context data
+        'user': current_user,
+        'pending_forms': pending_forms,
+        'recent_forms': recent_forms,
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+        'returned_count': returned_count,
+        'today_count': today_count,
     }
     return render(request, "admin_panel/ApplicationApprovalsDashboard.html", context)
 
@@ -280,7 +302,7 @@ def select_form_type(request):
 
 
 def save_ferpa_form(request):
-    """Simple view to save FERPA form data to database"""
+    """Simple view to save FERPA form data to database."""
     if "access_token" not in request.session:
         return redirect("login")
     
@@ -291,7 +313,15 @@ def save_ferpa_form(request):
     user = get_object_or_404(User, email=email)
     
     if request.method == 'POST':
-        # Create a new form instance
+        # Decide form status based on which button was clicked
+        if "save_as_draft" in request.POST:
+            form_status = "draft"
+            submitted_time = None  # No submission time for drafts
+        else:
+            form_status = "pending"
+            submitted_time = timezone.now()
+        
+        # Create a new FERPAForm instance
         ferpa_form = FERPAForm(
             user=user,
             student_name=request.POST.get('student_name', ''),
@@ -307,15 +337,15 @@ def save_ferpa_form(request):
             other_office_text=request.POST.get('other_office_text', ''),
             other_info_text=request.POST.get('other_info_text', ''),
             other_purpose_text=request.POST.get('other_purpose_text', ''),
-            status='pending',  # Set as pending by default
-            submitted_at=timezone.now()
+            status=form_status,
+            submitted_at=submitted_time
         )
         ferpa_form.save()
-        
-        # Return a success response
+
+        # Redirect to Applications (or wherever you want)
         return redirect('Applications')
     
-    # If not POST, redirect to home
+    # If not POST, just redirect to Applications
     return redirect('Applications')
 
 def preview_application(request, form_id):
@@ -395,3 +425,111 @@ def generate_pdf(request, form_id):
     p.save()
 
     return response
+
+
+def approve_ferpa_form(request, form_id):
+    """Approve a FERPA form if the user is manager or superuser."""
+    if "access_token" not in request.session:
+        return redirect("login")
+
+    email = request.session.get("user_email")
+    if not email:
+        return redirect("login")
+
+    current_user = User.objects.filter(email=email).first()
+    if not current_user or current_user.role not in ["superuser", "manager"]:
+        return HttpResponseForbidden("You do not have permission to approve forms.")
+
+    # Fetch the form that is pending
+    ferpa_form = get_object_or_404(FERPAForm, id=form_id, status="pending")
+
+    # Approve the form using the built-in method
+    ferpa_form.approve(reviewer=current_user)
+
+    # Redirect back to approvals page
+    return redirect("ApplicationApprovals")
+
+
+
+def return_ferpa_form(request, form_id):
+    """Return a FERPA form for revision if the user is manager or superuser."""
+    if "access_token" not in request.session:
+        return redirect("login")
+
+    email = request.session.get("user_email")
+    if not email:
+        return redirect("login")
+
+    current_user = User.objects.filter(email=email).first()
+    if not current_user or current_user.role not in ["superuser", "manager"]:
+        return HttpResponseForbidden("You do not have permission to return forms.")
+
+    # We might want an optional reason from POST
+    reason = request.POST.get("reason", "No reason provided")
+
+    # Fetch the form that is pending (or maybe returned from draft too)
+    ferpa_form = get_object_or_404(FERPAForm, id=form_id, status="pending")
+
+    # Call the built-in model method
+    ferpa_form.return_for_revision(reviewer=current_user, comments=reason)
+
+    # Redirect back to approvals page
+    return redirect("ApplicationApprovals")
+
+
+def edit_ferpa_form(request, form_id):
+    """Allow a user to edit their draft or returned FERPA form."""
+    if "access_token" not in request.session:
+        return redirect("login")
+
+    email = request.session.get("user_email")
+    if not email:
+        return redirect("login")
+
+    current_user = User.objects.filter(email=email).first()
+    if not current_user:
+        return redirect("login")
+
+    # 1) Fetch the form, ensuring user is the owner and it's in draft or returned
+    ferpa_form = get_object_or_404(
+        FERPAForm,
+        id=form_id,
+        user=current_user,
+        status__in=["draft", "returned"]
+    )
+
+    if request.method == "POST":
+        # 2) Decide if user wants to "Save as Draft" or "Submit Form"
+        if "save_as_draft" in request.POST:
+            form_status = "draft"
+            submitted_time = None
+        else:
+            form_status = "pending"
+            submitted_time = timezone.now()
+
+        # 3) Update existing record with new data
+        ferpa_form.student_name = request.POST.get("student_name", "")
+        ferpa_form.university_division = request.POST.get("university_division", "")
+        ferpa_form.peoplesoft_id = request.POST.get("peoplesoft_id", "")
+        ferpa_form.offices = request.POST.getlist("offices[]", [])
+        ferpa_form.info_categories = request.POST.getlist("info_categories[]", [])
+        ferpa_form.release_to = request.POST.get("release_to", "")
+        ferpa_form.additional_individuals = request.POST.get("additional_individuals", "")
+        ferpa_form.purposes = request.POST.getlist("purposes[]", [])
+        ferpa_form.password = request.POST.get("password", "")
+        ferpa_form.form_date = request.POST.get("form_date", timezone.now().date())
+        ferpa_form.other_office_text = request.POST.get("other_office_text", "")
+        ferpa_form.other_info_text = request.POST.get("other_info_text", "")
+        ferpa_form.other_purpose_text = request.POST.get("other_purpose_text", "")
+        ferpa_form.status = form_status
+        ferpa_form.submitted_at = submitted_time
+
+        ferpa_form.save()
+        return redirect("Applications")
+
+    # If GET, pre-fill the same HTML template with ferpa_form data
+    context = {
+        "ferpa_form": ferpa_form,
+        "user": current_user
+    }
+    return render(request, "FERPA_Authorization_form.html", context)

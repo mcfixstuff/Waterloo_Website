@@ -17,7 +17,13 @@
             <small>Family Educational Rights and Privacy Act of 1974 as Amended (FERPA)</small>
         </div>
         <div class="card-body">
-            <form method="post" action="{% url 'save_ferpa_form' %}" id="ferpaForm">
+            {% if ferpa_form %}
+            <!-- This is an existing form: go to edit_ferpa_form -->
+            <form method="post" action="{% url 'edit_ferpa_form' ferpa_form.id %}">
+        {% else %}
+            <!-- This is a new form: go to save_ferpa_form -->
+            <form method="post" action="{% url 'save_ferpa_form' %}">
+        {% endif %}
                 {% csrf_token %}
                 
                 <!-- Display form validation errors -->
@@ -244,16 +250,27 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-12">
-                        <div class="d-flex justify-content-between">
-                            <small class="text-muted">Please Retain a Copy for your Records<br>Document may be Submitted to Registrar's Office</small>
-                            <button type="submit" class="btn btn-primary">Submit Form</button>
-                        </div>
-                        <small class="text-muted d-block mt-2">FERPA Authorization Form<br>OGC-SF-2006-02 Revised 11.10.2022<br>Page 1 of 1</small>
-                        <small class="text-muted d-block mt-2 fst-italic">Note: Modification of this Form requires approval of OGC</small>
-                    </div>
-                </div>
+<!-- Replace the final row in your <form> -->
+    <div class="row">
+        <div class="col-12">
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">
+              Please Retain a Copy for your Records<br>Document may be Submitted to Registrar's Office
+            </small>
+            <!-- Two buttons: 'Save as Draft' and 'Submit' -->
+            <div>
+                <button type="submit" class="btn btn-secondary" name="save_as_draft" value="true">
+                    Save as Draft
+                </button>
+                <button type="submit" class="btn btn-primary" name="submit_form" value="true">
+                    Submit Form
+                </button>
+            </div>
+          </div>
+          <small class="text-muted d-block mt-2">FERPA Authorization Form<br>OGC-SF-2006-02 Revised 11.10.2022<br>Page 1 of 1</small>
+          <small class="text-muted d-block mt-2 fst-italic">Note: Modification of this Form requires approval of OGC</small>
+        </div>
+      </div>
             </form>
         </div>
     </div>
