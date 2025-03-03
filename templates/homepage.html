@@ -55,19 +55,18 @@
         <h1>Waterloo Website</h1>
         
         {% if request.session.access_token %}
-            <a href="/admin/dashboard" class="btn btn-blue">Dashboard</a>
+            <a href="/admin/dashboard/" class="btn btn-blue">Dashboard</a>
             <a href="{% url 'logout' %}?next=/" class="btn btn-red">Logout</a>  <!-- Red Logout Button -->
         {% else %}
-            <a href="/admin/login" class="btn btn-blue">Login</a>
+            <a href="/admin/login/" class="btn btn-blue">Login</a>
         {% endif %}
     </div>
     <div class="main-content">
         <h1>WATERLOO WEBSITE UNDER CONSTRUCTION</h1>
 
         <div class="link-container">
-            <a href="/forms" class="btn btn-blue">Go to Forms</a>
+            <a href="/forms/" class="btn btn-blue">Go to Forms</a>
         </div>
     </div>
 </body>
 </html>
-
