@@ -11,7 +11,7 @@ import requests
 def check_session(request):
     """Helper function to check if a user is logged in"""
     if "access_token" not in request.session:
-        return redirect("/admin/login")  # Redirect to login if not authenticated
+        return redirect("/admin/login/")  # Redirect to login if not authenticated
     return None
 
 def rr_form(request):
