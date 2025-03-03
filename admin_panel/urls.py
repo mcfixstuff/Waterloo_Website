@@ -4,7 +4,7 @@ from . import views
 
 
 from django.urls import path
-from .views import show_login_page, trigger_microsoft_login, login_view, admin_dashboard,Applications, ApplicationApprovals,preview_application,generate_pdf,approve_ferpa_form,return_ferpa_form
+from .views import show_login_page, trigger_microsoft_login, login_view, admin_dashboard,Applications, ApplicationApprovals,preview_application,generate_pdf
 
 urlpatterns = [
     path("login/", show_login_page, name="login"),  # Shows login page with a button
@@ -27,15 +27,20 @@ urlpatterns = [
     
     # storing data from from 1 
     path('save-ferpa-form/', views.save_ferpa_form, name='save_ferpa_form'),
-    
-    path("preview_application/<int:form_id>/", preview_application, name="preview_application"),
-    
-    path("ferpa/<int:form_id>/pdf/", generate_pdf, name="generate_pdf"),
+    path('save-texas-affidavit-form/', views.save_texas_affidavit_form, name='save_texas_affidavit_form'),
     
     
-    path("approve_form/<int:form_id>/", approve_ferpa_form, name="approve_form"),
     
-    path("return_form/<int:form_id>/", return_ferpa_form, name="return_form"),
+    path("preview_application/<int:app_id>/", preview_application, name="preview_application"),
     
-    path("edit-ferpa/<int:form_id>/", views.edit_ferpa_form, name="edit_ferpa_form"),
+    
+    path("application/<int:app_id>/pdf/", generate_pdf, name="generate_pdf"),
+    
+    
+    path("approve_form/<int:app_id>/", views.approve_form, name="approve_form"),
+    
+    path("return_form/<int:app_id>/", views.return_form, name="return_form"),
+    
+    path("edit_ferpa_form/<int:app_id>/", views.edit_ferpa_form, name="edit_ferpa_form"),
+    path("edit_texas_residency/<int:app_id>/", views.edit_texas_residency, name="edit_texas_residency"),
 ]

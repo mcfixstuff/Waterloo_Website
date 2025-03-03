@@ -1,0 +1,47 @@
+<!-- return_form.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Application</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>Return Application for Revision</h4>
+            </div>
+            <div class="card-body">
+                <h5>{{ application.application_name }}</h5>
+                <p>Submitted by: {{ application.user.username }}</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="comments" class="form-label">Comments for Student:</label>
+                        <textarea name="comments" id="comments" rows="5" class="form-control" required></textarea>
+                        <div class="form-text">Please provide details on what needs to be corrected.</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'preview_application' application.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-eye"></i> Preview Application
+                        </a>
+                        <div>
+                            <a href="{% url 'ApplicationApprovals' %}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-undo"></i> Return for Revision
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

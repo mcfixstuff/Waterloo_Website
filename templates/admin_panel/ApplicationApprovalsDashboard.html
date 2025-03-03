@@ -35,62 +35,56 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h2">Application Approvals</h1>
-            <a href="#" class="btn btn-danger">Logout</a>
+            <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
         </div>
 
-<!-- Stats Cards -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3 mb-md-0">
-        <div class="card bg-primary text-white">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="card-title mb-0">Pending</h5>
-                    <!-- use {{ pending_count }} -->
-                    <p class="card-text fs-1 fw-bold mb-0">{{ pending_count }}</p>
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="card bg-primary text-white">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">Pending</h5>
+                            <p class="card-text fs-1 fw-bold mb-0">{{ pending_count }}</p>
+                        </div>
+                        <i class="fas fa-hourglass-half fa-2x"></i>
+                    </div>
                 </div>
-                <i class="fas fa-hourglass-half fa-2x"></i>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="card bg-success text-white">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">Approved</h5>
+                            <p class="card-text fs-1 fw-bold mb-0">{{ approved_count }}</p>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="card bg-danger text-white">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">Returned</h5>
+                            <p class="card-text fs-1 fw-bold mb-0">{{ returned_count }}</p>
+                        </div>
+                        <i class="fas fa-undo fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="card bg-info text-white">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">Today</h5>
+                            <p class="card-text fs-1 fw-bold mb-0">{{ today_count }}</p>
+                        </div>
+                        <i class="fas fa-calendar-day fa-2x"></i>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-3 mb-3 mb-md-0">
-        <div class="card bg-success text-white">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="card-title mb-0">Approved</h5>
-                    <!-- use {{ approved_count }} -->
-                    <p class="card-text fs-1 fw-bold mb-0">{{ approved_count }}</p>
-                </div>
-                <i class="fas fa-check-circle fa-2x"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3 mb-md-0">
-        <div class="card bg-danger text-white">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="card-title mb-0">Returned</h5>
-                    <!-- use {{ returned_count }} -->
-                    <p class="card-text fs-1 fw-bold mb-0">{{ returned_count }}</p>
-                </div>
-                <i class="fas fa-undo fa-2x"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3 mb-md-0">
-        <div class="card bg-info text-white">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="card-title mb-0">Today</h5>
-                    <!-- use {{ today_count }} -->
-                    <p class="card-text fs-1 fw-bold mb-0">{{ today_count }}</p>
-                </div>
-                <i class="fas fa-calendar-day fa-2x"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 
         <!-- Pending Approvals Table -->
         <div class="card mb-4">
@@ -107,7 +101,7 @@
                     <table class="table table-striped table-hover">
                         <thead>
                             <tr>
-                                <th>Form ID</th>
+                                <th>ID</th>
                                 <th>Form Type</th>
                                 <th>Submitted By</th>
                                 <th>Submission Date</th>
@@ -118,7 +112,7 @@
                             {% for form in pending_forms %}
                                 <tr>
                                     <td>{{ form.id }}</td>
-                                    <td>FERPA Authorization</td>
+                                    <td>{{ form.get_type_display }}</td>
                                     <td>{{ form.user.username }}</td>
                                     <td>
                                         {% if form.submitted_at %}
@@ -129,25 +123,25 @@
                                     </td>
                                     <td>
                                         <div class="btn-group">
-                                            <!-- Existing Preview button -->
+                                            <!-- Preview button -->
                                             <a href="{% url 'preview_application' form.id %}" 
                                                class="btn btn-sm btn-outline-primary">
                                                <i class="fas fa-eye"></i>
                                             </a>
         
-                                           <!-- Approve button -->
-<a href="{% url 'approve_form' form.id %}"
-class="btn btn-sm btn-outline-success">
-<i class="fas fa-check"></i>
-</a>
+                                            <!-- Approve button -->
+                                            <a href="{% url 'approve_form' form.id %}"
+                                               class="btn btn-sm btn-outline-success">
+                                               <i class="fas fa-check"></i>
+                                            </a>
                                             
-                                            <!-- Return button (optional) -->
-<!-- Return button -->
-<a href="{% url 'return_form' form.id %}" class="btn btn-sm btn-outline-danger">
-    <i class="fas fa-undo"></i>
-</a>
+                                            <!-- Return button -->
+                                            <a href="{% url 'return_form' form.id %}"
+                                               class="btn btn-sm btn-outline-danger">
+                                               <i class="fas fa-undo"></i>
+                                            </a>
         
-                                            <!-- New Download PDF button (change 'download_pdf' to your actual view name) -->
+                                            <!-- Download PDF button -->
                                             <a href="{% url 'generate_pdf' form.id %}"
                                                class="btn btn-sm btn-outline-info">
                                                <i class="fas fa-file-pdf"></i>
@@ -167,290 +161,46 @@ class="btn btn-sm btn-outline-success">
         </div>
 
         <!-- Recent Activity -->
-<!-- Recent Activity -->
-<div class="card">
-    <div class="card-header bg-white">
-        <h3 class="h5 mb-0">Recent Activity</h3>
-    </div>
-    <div class="card-body">
-        <ul class="list-group list-group-flush">
-            {% for form in recent_forms %}
-                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                    <div>
-                        {% if form.status == 'approved' %}
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            <span class="fw-bold">Approved:</span>
-                        {% elif form.status == 'returned' %}
-                            <i class="fas fa-undo text-danger me-2"></i>
-                            <span class="fw-bold">Returned:</span>
-                        {% endif %}
+        <div class="card">
+            <div class="card-header bg-white">
+                <h3 class="h5 mb-0">Recent Activity</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for form in recent_forms %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                {% if form.status == 'approved' %}
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span class="fw-bold">Approved:</span>
+                                {% elif form.status == 'returned' %}
+                                    <i class="fas fa-undo text-danger me-2"></i>
+                                    <span class="fw-bold">Returned:</span>
+                                {% endif %}
 
-                        <!-- E.g., use form.student_name or user.username -->
-                        FERPA Authorization for {{ form.student_name }}
-                    </div>
-                    <span class="text-muted small">
-                        <!-- Show the reviewed_at date if it exists, else fallback to updated_at -->
-                        {% if form.reviewed_at %}
-                            {{ form.reviewed_at|date:"M d, Y, g:i A" }}
-                        {% else %}
-                            {{ form.updated_at|date:"M d, Y, g:i A" }}
-                        {% endif %}
-                    </span>
-                </li>
-            {% empty %}
-                <li class="list-group-item text-center">
-                    No recent activity.
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-</div>
-
-    <!-- View Application Modal -->
-    <div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="viewModalLabel">View Application</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="d-flex justify-content-between mb-3">
-                        <div>
-                            <h4>Course Add/Drop Form</h4>
-                            <p class="text-muted">Application ID: APP-2025-0312</p>
-                        </div>
-                        <div>
-                            <span class="badge bg-primary">Pending Approval</span>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <p><strong>Submitted By:</strong> Jane Smith</p>
-                            <p><strong>Student ID:</strong> 1234567</p>
-                            <p><strong>Email:</strong> jane.smith@example.edu</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Submission Date:</strong> Feb 26, 2025</p>
-                            <p><strong>Current Step:</strong> 1 of 3 (Advisor Approval)</p>
-                            <p><strong>Next Approver:</strong> Department Chair</p>
-                        </div>
-                    </div>
-                    
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h5 class="mb-0">Application Details</h5>
-                        </div>
-                        <div class="card-body">
-                            <h6>Courses to Add:</h6>
-                            <table class="table table-bordered mb-4">
-                                <thead>
-                                    <tr>
-                                        <th>Course Code</th>
-                                        <th>Section</th>
-                                        <th>Credits</th>
-                                        <th>Instructor</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>COMP 4320</td>
-                                        <td>001</td>
-                                        <td>3</td>
-                                        <td>Dr. Johnson</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            
-                            <h6>Courses to Drop:</h6>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Course Code</th>
-                                        <th>Section</th>
-                                        <th>Credits</th>
-                                        <th>Instructor</th>
-                                        <th>Reason</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>MATH 3340</td>
-                                        <td>002</td>
-                                        <td>3</td>
-                                        <td>Dr. Williams</td>
-                                        <td>Schedule conflict with required course</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            
-                            <h6 class="mt-4">Student Comments:</h6>
-                            <p>I need to drop MATH 3340 because it conflicts with COMP 4320, which is required for my major and only offered this semester. I have verified with my advisor that this change will not affect my degree progress.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h5 class="mb-0">Approval History</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">
-                                    <p class="mb-0"><strong>Submitted by Student</strong> - Feb 26, 2025, 9:15 AM</p>
-                                </li>
-                                <!-- Additional history items would appear here as the form progresses -->
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">Student's Signature</h5>
-                        </div>
-                        <div class="card-body text-center">
-                            <img src="/api/placeholder/200/100" alt="Student signature" class="img-fluid" style="max-height: 100px;">
-                            <p class="text-muted mt-2">Electronically signed by Jane Smith on Feb 26, 2025</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <a href="#" class="btn btn-info" download>
-                        <i class="fas fa-file-pdf"></i> Download PDF
-                    </a>
-                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#returnModal" data-bs-dismiss="modal">
-                        <i class="fas fa-undo"></i> Return for Revision
-                    </button>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal" data-bs-dismiss="modal">
-                        <i class="fas fa-check"></i> Approve
-                    </button>
-                </div>
+                                <!-- Show application name -->
+                                {{ form.application_name }}
+                            </div>
+                            <span class="text-muted small">
+                                <!-- Show the reviewed_at date if it exists, else fallback to updated_at -->
+                                {% if form.reviewed_at %}
+                                    {{ form.reviewed_at|date:"M d, Y, g:i A" }}
+                                {% else %}
+                                    {{ form.updated_at|date:"M d, Y, g:i A" }}
+                                {% endif %}
+                            </span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-center">
+                            No recent activity.
+                        </li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
 
-    <!-- Approve Modal -->
-    <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="approveModalLabel">Approve Application</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>You are about to approve the following application:</p>
-                    <p><strong>Application ID:</strong> APP-2025-0312</p>
-                    <p><strong>Form Type:</strong> Course Add/Drop Form</p>
-                    <p><strong>Submitted By:</strong> Jane Smith</p>
-                    
-                    <div class="mb-3">
-                        <label for="approverComments" class="form-label">Comments (Optional):</label>
-                        <textarea class="form-control" id="approverComments" rows="3" placeholder="Add any comments or notes about your approval"></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="useSignatureApprove" checked>
-                            <label class="form-check-label" for="useSignatureApprove">
-                                Use my electronic signature
-                            </label>
-                        </div>
-                        <div class="border p-3 text-center mt-2">
-                            <img src="/api/placeholder/200/100" alt="Your signature" class="img-fluid" style="max-height: 100px;">
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success">Confirm Approval</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Return Modal -->
-    <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="returnModalLabel">Return Application for Revision</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>You are about to return the following application for revision:</p>
-                    <p><strong>Application ID:</strong> APP-2025-0312</p>
-                    <p><strong>Form Type:</strong> Course Add/Drop Form</p>
-                    <p><strong>Submitted By:</strong> Jane Smith</p>
-                    
-                    <div class="mb-3">
-                        <label for="returnReason" class="form-label">Reason for Return (Required):</label>
-                        <textarea class="form-control" id="returnReason" rows="3" placeholder="Explain why the application is being returned and what needs to be corrected" required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger">Confirm Return</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bulk Approve Modal -->
-    <div class="modal fade" id="bulkApproveModal" tabindex="-1" aria-labelledby="bulkApproveModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="bulkApproveModalLabel">Bulk Approve Applications</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>You are about to approve multiple applications:</p>
-                    <ul class="list-group mb-3">
-                        <li class="list-group-item">APP-2025-0312 - Course Add/Drop Form (Jane Smith)</li>
-                        <li class="list-group-item">APP-2025-0311 - FERPA Authorization (Michael Johnson)</li>
-                        <li class="list-group-item">APP-2025-0309 - Leave of Absence Request (Robert Williams)</li>
-                    </ul>
-                    
-                    <div class="mb-3">
-                        <label for="bulkApproveComments" class="form-label">Comments (Optional):</label>
-                        <textarea class="form-control" id="bulkApproveComments" rows="3" placeholder="These comments will be applied to all selected applications"></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="useSignatureBulk" checked>
-                            <label class="form-check-label" for="useSignatureBulk">
-                                Use my electronic signature for all approvals
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success">Confirm All Approvals</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bulk Return Modal -->
-    <div class="modal fade" id="bulkReturnModal" tabindex="-1" aria-labelledby="bulkReturnModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="bulkReturnModalLabel">Bulk Return Applications</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>You are about to return multiple applications for revision:</p>
-                    <ul class="list-group mb-3">
-                        <li class="list-group-item">APP-2025-0312 - Course Add/Drop Form (Jane Smith)</li>
-                        <li class="list-group-item">APP-2025-0311 - FERPA Authorization (Michael Johnson)</li>
-                        <li class="list-group-item">APP-2025-0309 - Leave of Absence Request (Robert Williams)</li>
-                    </ul>
-                    
-                    <div class="mb-3">
-                        <label for="bulkReturnReason" class="form-label">Reason for Return (Required):</label>
-                        <textarea class="form-control" id="bulkReturnReason" rows="3" placeholder="This reason will be applied to all selected applications" required></textarea>
-                    </div>
+    <!-- JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -18,8 +18,8 @@
         </div>
         <div class="card-body">
             {% if ferpa_form %}
-            <!-- This is an existing form: go to edit_ferpa_form -->
-            <form method="post" action="{% url 'edit_ferpa_form' ferpa_form.id %}">
+            <!-- This is an existing form: go to edit_ferpa_form with application ID -->
+            <form method="post" action="{% url 'edit_ferpa_form' application.id %}">
         {% else %}
             <!-- This is a new form: go to save_ferpa_form -->
             <form method="post" action="{% url 'save_ferpa_form' %}">

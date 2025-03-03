@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>FERPA Authorization Form - Snapshot</title>
+    <title>FERPA Authorization Form - Preview</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
       rel="stylesheet"
@@ -15,6 +15,32 @@
 </head>
 <body class="bg-light">
 <div class="container my-4">
+    <!-- Status Banner -->
+    <div class="alert alert-info mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="alert-heading mb-0">Application Status: {{ application.get_status_display }}</h5>
+                <p class="mb-0">Created: {{ application.created_at|date:"F d, Y" }}</p>
+                {% if application.submitted_at %}
+                    <p class="mb-0">Submitted: {{ application.submitted_at|date:"F d, Y" }}</p>
+                {% endif %}
+                {% if application.reviewer %}
+                    <p class="mb-0">Reviewer: {{ application.reviewer.username }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">Back to Dashboard</a>
+            </div>
+        </div>
+        
+        {% if application.review_comments %}
+        <hr>
+        <h6>Review Comments:</h6>
+        <p class="mb-0">{{ application.review_comments }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Form Preview -->
     <div class="card">
         <div class="card-header bg-primary text-white">
             <h3 class="card-title mb-0">AUTHORIZATION TO RELEASE EDUCATIONAL RECORDS</h3>
@@ -22,7 +48,7 @@
             <small>Family Educational Rights and Privacy Act of 1974 as Amended (FERPA)</small>
         </div>
         <div class="card-body">
-            <!-- Start: Snapshot (No form tags) -->
+            <!-- Start: Preview (No form tags) -->
             <p>
               I <strong>{{ ferpa_form.student_name }}</strong> hereby voluntarily authorize
               officials in the University of Houston - <strong>{{ ferpa_form.university_division }}</strong>
@@ -34,7 +60,12 @@
             <p>
               <strong>Selected Offices:</strong>
               {% if ferpa_form.offices %}
-                {{ ferpa_form.offices|join:", " }}
+                {% for office in ferpa_form.offices %}
+                  {{ office }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% if 'Other' in ferpa_form.offices and ferpa_form.other_office_text %}
+                  ({{ ferpa_form.other_office_text }})
+                {% endif %}
               {% else %}
                 None
               {% endif %}
@@ -44,7 +75,12 @@
             <p>
               <strong>Information Categories:</strong>
               {% if ferpa_form.info_categories %}
-                {{ ferpa_form.info_categories|join:", " }}
+                {% for category in ferpa_form.info_categories %}
+                  {{ category }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% if 'Other' in ferpa_form.info_categories and ferpa_form.other_info_text %}
+                  ({{ ferpa_form.other_info_text }})
+                {% endif %}
               {% else %}
                 None
               {% endif %}
@@ -65,7 +101,12 @@
             <p>
               <strong>Purpose(s):</strong>
               {% if ferpa_form.purposes %}
-                {{ ferpa_form.purposes|join:", " }}
+                {% for purpose in ferpa_form.purposes %}
+                  {{ purpose }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% if 'Other' in ferpa_form.purposes and ferpa_form.other_purpose_text %}
+                  ({{ ferpa_form.other_purpose_text }})
+                {% endif %}
               {% else %}
                 None
               {% endif %}
@@ -95,11 +136,11 @@
                 <p><strong>Student Name [please print]:</strong> {{ ferpa_form.student_name }}</p>
               </div>
               <div class="col-md-6">
-                <p><strong>Date:</strong> {{ ferpa_form.form_date }}</p>
+                <p><strong>Date:</strong> {{ ferpa_form.form_date|date:"F d, Y" }}</p>
               </div>
             </div>
             
-            <!-- Signature Snapshot -->
+            <!-- Signature Preview -->
             <div class="mb-4">
                 <label class="form-label"><strong>Student Signature:</strong></label>
                 {% if user_signature %}
@@ -128,8 +169,31 @@
                 Note: Modification of this Form requires approval of OGC
               </small>
             </div>
-            <!-- End: Snapshot -->
+            <!-- End: Preview -->
         </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 d-flex justify-content-between">
+        
+        {% if application.status == 'draft' and application.user.email == request.session.user_email %}
+        <div>
+            <a href="{% url 'edit_ferpa_form' application.id %}" class="btn btn-primary me-2">Edit Form</a>
+            <a href="{% url 'submit_application' application.id %}" class="btn btn-success">Submit for Approval</a>
+        </div>
+        {% endif %}
+        
+        {% if application.status == 'pending' and user.role in 'manager,superuser' %}
+        <div>
+            <a href="{% url 'review_application' application.id %}" class="btn btn-primary">Review Application</a>
+        </div>
+        {% endif %}
+        
+        {% if application.status == 'returned' and application.user.email == request.session.user_email %}
+        <div>
+            <a href="{% url 'edit_ferpa_form' application.id %}" class="btn btn-warning">Edit & Resubmit</a>
+        </div>
+        {% endif %}
     </div>
 </div>
 

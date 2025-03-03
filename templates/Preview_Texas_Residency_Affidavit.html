@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Texas Residency Affidavit - Snapshot</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+</head>
+<body class="bg-light">
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">AFFIDAVIT</h3>
+            <p class="mb-0">STATE OF TEXAS</p>
+            <small>Texas Residency Verification</small>
+        </div>
+        <div class="card-body">
+            <!-- Start: Snapshot (No form tags) -->
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <p><strong>COUNTY OF</strong></p>
+                </div>
+                <div class="col-md-9">
+                    <p>{{ texas_affidavit.county_name }}</p>
+                </div>
+            </div>
+            
+            <div class="alert alert-light border">
+                <p>Before me, the undersigned Notary Public, on this day personally appeared</p>
+                <p><strong>{{ texas_affidavit.appeared_name }}</strong></p>
+                <p>known to me, who being by me duly sworn upon his/her oath, deposed and said:</p>
+            </div>
+            
+            <!-- Personal Information Section -->
+            <div class="mb-4">
+                <div class="row">
+                    <div class="col-1">
+                        <span class="badge bg-primary rounded-circle">1</span>
+                    </div>
+                    <div class="col-11">
+                        <p>My name is <strong>{{ texas_affidavit.full_name }}</strong></p>
+                        <p>I am <strong>{{ texas_affidavit.age }}</strong> years of age and have personal knowledge of the facts stated herein and they are all true and correct.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Education Verification Section -->
+            <div class="mb-3">
+                <div class="row">
+                    <div class="col-1">
+                        <span class="badge bg-primary rounded-circle">2</span>
+                    </div>
+                    <div class="col-11">
+                        <p>
+                            {% if texas_affidavit.graduated_check %}
+                                <i class="fas fa-check-square text-success"></i>
+                            {% else %}
+                                <i class="fas fa-square text-muted"></i>
+                            {% endif %}
+                            I graduated or will graduate from a Texas high school or received my GED certificate in Texas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="row">
+                    <div class="col-1">
+                        <span class="badge bg-primary rounded-circle">3</span>
+                    </div>
+                    <div class="col-11">
+                        <p>
+                            {% if texas_affidavit.resided_check %}
+                                <i class="fas fa-check-square text-success"></i>
+                            {% else %}
+                                <i class="fas fa-square text-muted"></i>
+                            {% endif %}
+                            I resided in Texas for three years leading up to graduation from high school or receiving my GED certificate.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="row">
+                    <div class="col-1">
+                        <span class="badge bg-primary rounded-circle">4</span>
+                    </div>
+                    <div class="col-11">
+                        <p>I have resided or will have resided in Texas for the 12 months prior the census date of the semester in which I will enroll in</p>
+                        <p><strong>{{ texas_affidavit.college_name }}</strong></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <div class="row">
+                    <div class="col-1">
+                        <span class="badge bg-primary rounded-circle">5</span>
+                    </div>
+                    <div class="col-11">
+                        <p>
+                            {% if texas_affidavit.permanent_resident_check %}
+                                <i class="fas fa-check-square text-success"></i>
+                            {% else %}
+                                <i class="fas fa-square text-muted"></i>
+                            {% endif %}
+                            I have filed or will file an application to become a permanent resident at the earliest opportunity that I am eligible to do so.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Date Section -->
+            <div class="alert alert-light border mb-4">
+                <p>In witness whereof, this <strong>{{ texas_affidavit.day_of_month }}</strong> day of <strong>{{ texas_affidavit.month }}</strong>, <strong>{{ texas_affidavit.year }}</strong>.</p>
+            </div>
+            
+            <!-- Signature Section -->
+            <div class="row mb-3">
+                <div class="col-md-8 offset-md-2">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Signature:</strong></label>
+                        {% if user_signature %}
+                          <div class="border p-3 mb-2 text-center">
+                              <img src="{{ user_signature }}" alt="Student Signature"
+                                   class="img-fluid" style="max-height: 100px;" />
+                          </div>
+                        {% else %}
+                          <p class="text-muted">No signature on file.</p>
+                        {% endif %}
+                    </div>
+                    <div class="form-text text-center">(Signature)</div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-8 offset-md-2">
+                    <p class="text-center"><strong>{{ texas_affidavit.full_name }}</strong></p>
+                    <div class="form-text text-center">(Printed Name)</div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-8 offset-md-2">
+                    <p class="text-center"><strong>{{ texas_affidavit.student_id }}</strong></p>
+                    <div class="form-text text-center">(Student I.D.#)</div>
+                </div>
+            </div>
+            
+            <div class="row mb-5">
+                <div class="col-md-8 offset-md-2">
+                    <p class="text-center"><strong>{{ texas_affidavit.student_dob|date:"M d, Y" }}</strong></p>
+                    <div class="form-text text-center">(Student Date of Birth)</div>
+                </div>
+            </div>
+            
+            <!-- Notary Section -->
+            <div class="alert alert-secondary">
+                <h5>NOTARY SECTION</h5>
+                <p class="mb-3"><strong>SUBCRIBED TO AND SWORN TO BEFORE ME</strong>, on the 
+                {% if texas_affidavit.notary_day %}{{ texas_affidavit.notary_day }}{% else %}___{% endif %} 
+                day of 
+                {% if texas_affidavit.notary_month %}{{ texas_affidavit.notary_month }}{% else %}___________{% endif %},
+                {% if texas_affidavit.notary_year %}{{ texas_affidavit.notary_year }}{% else %}___________{% endif %},
+                to certify which witness my hand and official seal.</p>
+                
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        {% if texas_affidavit.notary_name %}
+                            <p class="text-center"><strong>{{ texas_affidavit.notary_name }}</strong></p>
+                        {% else %}
+                            <div class="border-bottom border-dark mb-2"></div>
+                        {% endif %}
+                        <div class="form-text text-center">Notary Public in and for the State of Texas</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="mt-4">
+                <small class="text-muted">
+                    Please Retain a Copy for your Records<br>
+                    Submit to Registrar's Office
+                </small>
+                <small class="text-muted d-block mt-2">
+                    Texas Residency Affidavit Form<br>
+                    Page 1 of 1
+                </small>
+            </div>
+            <!-- End: Snapshot -->
+        </div>
+    </div>
+</div>
+
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"
+></script>
+</body>
+</html>

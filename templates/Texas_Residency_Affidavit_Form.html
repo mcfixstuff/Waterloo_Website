@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texas Residency Affidavit Form</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">AFFIDAVIT</h3>
+            <p class="mb-0">STATE OF TEXAS</p>
+            <small>Texas Residency Verification</small>
+        </div>
+        <div class="card-body">
+            {% if application %}
+                <!-- This is an existing form: use the application ID -->
+                <form method="post" action="{% url 'edit_texas_residency' application.id %}">
+            {% else %}
+                <!-- This is a new form -->
+                <form method="post" action="{% url 'save_texas_affidavit_form' %}">
+            {% endif %}
+                {% csrf_token %}
+                
+                <!-- Display form validation errors -->
+                {% if messages %}
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">Please correct the following errors:</h5>
+                    {% for message in messages %}
+                        <p class="mb-0">{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label for="county_name" class="form-label"><strong>COUNTY OF</strong></label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="county_name" name="county_name" value="{{ texas_affidavit.county_name }}" required>
+                    </div>
+                </div>
+                
+                <div class="alert alert-light border mb-3">
+                    <p>Before me, the undersigned Notary Public, on this day personally appeared</p>
+                    <input type="text" class="form-control mb-2" id="appeared_name" name="appeared_name" value="{{ texas_affidavit.appeared_name }}" required>
+                    <p>known to me, who being by me duly sworn upon his/her oath, deposed and said:</p>
+                </div>
+                
+                <!-- Personal Information Section -->
+                <div class="mb-4">
+                    <div class="row">
+                        <div class="col-1">
+                            <span class="badge bg-primary rounded-circle">1</span>
+                        </div>
+                        <div class="col-11">
+                            <p>My name is 
+                                <input type="text" class="form-control d-inline-block w-50" id="full_name" name="full_name" value="{{ user.username }}" required>
+                            </p>
+                            <p>I am 
+                                <input type="number" class="form-control d-inline-block w-25" id="age" name="age" value="{{ texas_affidavit.age }}" min="16" max="120" required>
+                                years of age and have personal knowledge of the facts stated herein and they are all true and correct.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Education Verification Section -->
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-1">
+                            <span class="badge bg-primary rounded-circle">2</span>
+                        </div>
+                        <div class="col-11">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="graduated_check" name="graduated_check" {% if texas_affidavit.graduated_check %}checked{% endif %} required>
+                                <label class="form-check-label" for="graduated_check">
+                                    I graduated or will graduate from a Texas high school or received my GED certificate in Texas.
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-1">
+                            <span class="badge bg-primary rounded-circle">3</span>
+                        </div>
+                        <div class="col-11">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="resided_check" name="resided_check" {% if texas_affidavit.resided_check %}checked{% endif %} required>
+                                <label class="form-check-label" for="resided_check">
+                                    I resided in Texas for three years leading up to graduation from high school or receiving my GED certificate.
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-1">
+                            <span class="badge bg-primary rounded-circle">4</span>
+                        </div>
+                        <div class="col-11">
+                            <p>I have resided or will have resided in Texas for the 12 months prior the census date of the semester in which I will enroll in</p>
+                            <input type="text" class="form-control" id="college_name" name="college_name" value="{{ texas_affidavit.college_name }}" placeholder="(name of college)" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="row">
+                        <div class="col-1">
+                            <span class="badge bg-primary rounded-circle">5</span>
+                        </div>
+                        <div class="col-11">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="permanent_resident_check" name="permanent_resident_check" {% if texas_affidavit.permanent_resident_check %}checked{% endif %} required>
+                                <label class="form-check-label" for="permanent_resident_check">
+                                    I have filed or will file an application to become a permanent resident at the earliest opportunity that I am eligible to do so.
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Date Section -->
+                <div class="alert alert-light border mb-4">
+                    <p>In witness whereof, this 
+                        <input type="number" class="form-control d-inline-block w-25" id="day_of_month" name="day_of_month" value="{{ texas_affidavit.day_of_month }}" min="1" max="31" required> 
+                        day of 
+                        <select class="form-select d-inline-block w-25" id="month" name="month" required>
+                            <option value="" disabled {% if not texas_affidavit.month %}selected{% endif %}>Select Month</option>
+                            <option value="January" {% if texas_affidavit.month == 'January' %}selected{% endif %}>January</option>
+                            <option value="February" {% if texas_affidavit.month == 'February' %}selected{% endif %}>February</option>
+                            <option value="March" {% if texas_affidavit.month == 'March' %}selected{% endif %}>March</option>
+                            <option value="April" {% if texas_affidavit.month == 'April' %}selected{% endif %}>April</option>
+                            <option value="May" {% if texas_affidavit.month == 'May' %}selected{% endif %}>May</option>
+                            <option value="June" {% if texas_affidavit.month == 'June' %}selected{% endif %}>June</option>
+                            <option value="July" {% if texas_affidavit.month == 'July' %}selected{% endif %}>July</option>
+                            <option value="August" {% if texas_affidavit.month == 'August' %}selected{% endif %}>August</option>
+                            <option value="September" {% if texas_affidavit.month == 'September' %}selected{% endif %}>September</option>
+                            <option value="October" {% if texas_affidavit.month == 'October' %}selected{% endif %}>October</option>
+                            <option value="November" {% if texas_affidavit.month == 'November' %}selected{% endif %}>November</option>
+                            <option value="December" {% if texas_affidavit.month == 'December' %}selected{% endif %}>December</option>
+                        </select>, 
+                        <input type="number" class="form-control d-inline-block w-25" id="year" name="year" value="{{ texas_affidavit.year|default:2025 }}" min="2000" max="2050" required>.
+                    </p>
+                </div>
+                
+                <!-- Signature Section -->
+                <div class="row mb-3">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Signature:</strong></label>
+                            {% if user.signature_image %}
+                              <div class="border p-3 mb-2 text-center">
+                                  <img src="{{ user.signature_image.url }}" alt="Your signature"
+                                       class="img-fluid" style="max-height: 100px;" />
+                                  <input type="hidden" name="use_existing_signature" value="true">
+                              </div>
+                              <div class="form-text">Your saved signature will be used on this form.</div>
+                            {% else %}
+                              <div class="alert alert-warning">
+                                  <p><strong>You don't have a signature on file.</strong></p>
+                                  <p>Please go to the <a href="{% url 'Applications' %}" class="alert-link">Applications</a> section and upload your signature first.</p>
+                              </div>
+                              <!-- Disable the submit button if no signature is available -->
+                              <script>
+                                  document.addEventListener('DOMContentLoaded', function() {
+                                      document.querySelector('button[type="submit"]').disabled = true;
+                                  });
+                              </script>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-8 offset-md-2">
+                        <label for="student_id" class="form-label">Student ID Number:</label>
+                        <input type="text" class="form-control" id="student_id" name="student_id" value="{{ texas_affidavit.student_id }}" required>
+                    </div>
+                </div>
+                
+                <div class="row mb-5">
+                    <div class="col-md-8 offset-md-2">
+                        <label for="student_dob" class="form-label">Student Date of Birth:</label>
+                        <input type="date" class="form-control" id="student_dob" name="student_dob" value="{{ texas_affidavit.student_dob|date:'Y-m-d' }}" required>
+                    </div>
+                </div>
+                
+                <!-- Notary Section (usually filled out by a notary) -->
+                <div class="alert alert-secondary">
+                    <h5>NOTARY SECTION</h5>
+                    <p class="mb-3"><strong>SUBCRIBED TO AND SWORN TO BEFORE ME</strong>, on the 
+                        <input type="number" class="form-control d-inline-block w-25" id="notary_day" name="notary_day" value="{{ texas_affidavit.notary_day }}" min="1" max="31">
+                        day of 
+                        <select class="form-select d-inline-block w-25" id="notary_month" name="notary_month">
+                            <option value="" selected>Select Month</option>
+                            <option value="January" {% if texas_affidavit.notary_month == 'January' %}selected{% endif %}>January</option>
+                            <option value="February" {% if texas_affidavit.notary_month == 'February' %}selected{% endif %}>February</option>
+                            <option value="March" {% if texas_affidavit.notary_month == 'March' %}selected{% endif %}>March</option>
+                            <option value="April" {% if texas_affidavit.notary_month == 'April' %}selected{% endif %}>April</option>
+                            <option value="May" {% if texas_affidavit.notary_month == 'May' %}selected{% endif %}>May</option>
+                            <option value="June" {% if texas_affidavit.notary_month == 'June' %}selected{% endif %}>June</option>
+                            <option value="July" {% if texas_affidavit.notary_month == 'July' %}selected{% endif %}>July</option>
+                            <option value="August" {% if texas_affidavit.notary_month == 'August' %}selected{% endif %}>August</option>
+                            <option value="September" {% if texas_affidavit.notary_month == 'September' %}selected{% endif %}>September</option>
+                            <option value="October" {% if texas_affidavit.notary_month == 'October' %}selected{% endif %}>October</option>
+                            <option value="November" {% if texas_affidavit.notary_month == 'November' %}selected{% endif %}>November</option>
+                            <option value="December" {% if texas_affidavit.notary_month == 'December' %}selected{% endif %}>December</option>
+                        </select>,
+                        <input type="number" class="form-control d-inline-block w-25" id="notary_year" name="notary_year" value="{{ texas_affidavit.notary_year|default:2025 }}" min="2000" max="2050">,
+                        to certify which witness my hand and official seal.
+                    </p>
+                    
+                    <div class="row">
+                        <div class="col-md-8 offset-md-2">
+                            <label for="notary_name" class="form-label">Notary Name:</label>
+                            <input type="text" class="form-control" id="notary_name" name="notary_name" value="{{ texas_affidavit.notary_name }}">
+                            <div class="form-text text-center">Notary Public in and for the State of Texas</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">
+                            Please Retain a Copy for your Records<br>
+                            Submit to Registrar's Office
+                        </small>
+                        <!-- Two buttons: 'Save as Draft' and 'Submit' -->
+                        <div>
+                            <button type="submit" class="btn btn-secondary" name="save_as_draft" value="true">
+                                Save as Draft
+                            </button>
+                            <button type="submit" class="btn btn-primary" name="submit_form" value="true">
+                                Submit Form
+                            </button>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        Texas Residency Affidavit Form<br>
+                        Page 1 of 1
+                    </small>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
