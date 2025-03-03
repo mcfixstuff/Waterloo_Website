@@ -278,12 +278,11 @@ def select_form_type(request):
         form_type = request.POST.get('form_type')
         
         # Store the form type selection in session instead of creating an application
-        if form_type in ['ferpa_authorization', 'texas_affidavit', 'leave_absence']:
+        if form_type in ['ferpa_authorization', 'texas_affidavit']:
             # Map the form type to application_type
             application_type = {
                 'ferpa_authorization': 'ferpa',
-                'texas_affidavit': 'texas_residency',
-                'leave_absence': 'other'
+                'texas_affidavit': 'texas_residency'
             }.get(form_type)
             
             # Store the selected type in session for later use when form is actually saved
