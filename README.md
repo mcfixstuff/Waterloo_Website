@@ -9,7 +9,9 @@ This project is a **user management system**
 ## 🚀 To Run
 
 ```bash
-docker-compose up -d
+build
+docker-compose build --no-cache
+docker-compose up
 
 
 ### ER MODEL FOR DATABASE

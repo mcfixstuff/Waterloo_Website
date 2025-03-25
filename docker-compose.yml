@@ -20,7 +20,6 @@ services:
       - SQLITE_DB_NAME=${SQLITE_DB_NAME}
       - TIME_ZONE=${TIME_ZONE}
       - STATIC_ROOT=${STATIC_ROOT}
-      
 
 volumes:
   static_volume:

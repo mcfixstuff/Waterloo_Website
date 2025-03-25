@@ -26,9 +26,6 @@ RUN mkdir -p /app/static
 RUN chmod -R 755 /app/media
 RUN chmod -R 755 /app/static
 
-# Copy .env file
-# The .env file should exist in your project directory when building
-
 # Expose port
 EXPOSE 8000
 
