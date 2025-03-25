@@ -9,7 +9,6 @@ This project is a **user management system**
 ## 🚀 To Run
 
 ```bash
-build
 docker-compose build --no-cache
 docker-compose up
 ```
