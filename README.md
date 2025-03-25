@@ -12,6 +12,7 @@ This project is a **user management system**
 build
 docker-compose build --no-cache
 docker-compose up
+```
 
 
 ### ER MODEL FOR DATABASE
@@ -101,4 +102,4 @@ docker-compose up
 
 - Back in the **My Application** section, this screen shows the approved and returned applications.
 - Returned applications include an **Edit and Resubmit** button for further action.
-```
+
