@@ -2,3 +2,8 @@ Django==5.1.6
 psycopg2-binary  # PostgreSQL adapter for Django
 msal  # Microsoft Authentication Library
 requests  # To make API calls
+reportlab
+gunicorn
+python-decouple
+python-decouple==3.8
+Pillow

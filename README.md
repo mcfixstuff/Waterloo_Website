@@ -1,8 +1,15 @@
 # COSC-4353-Group-Project
+
 Welcome to the official repository for Team Waterloo's project!
 
 ## Project Overview
+
 This project is a **user management system**
+
+## 🚀 To Run
+
+```bash
+docker-compose up -d
 
 
 ### ER MODEL FOR DATABASE
@@ -92,3 +99,4 @@ This project is a **user management system**
 
 - Back in the **My Application** section, this screen shows the approved and returned applications.
 - Returned applications include an **Edit and Resubmit** button for further action.
+```
