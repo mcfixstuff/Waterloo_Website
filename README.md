@@ -8,6 +8,9 @@ This project is a **user management system**
 
 ## 🚀 To Run
 
+1. setup .env 
+
+then 
 ```bash
 docker-compose build --no-cache
 docker-compose up
