@@ -15,6 +15,39 @@
 </head>
 <body class="bg-light">
 <div class="container my-4">
+          <!-- Status Banner -->
+          <div class="alert alert-info mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="alert-heading mb-0">
+                  Application Status: {{ application.get_status_display }}
+                </h5>
+                <p class="mb-0">
+                  Created: {{ application.created_at|date:"F d, Y" }}
+                </p>
+                {% if application.submitted_at %}
+                <p class="mb-0">
+                  Submitted: {{ application.submitted_at|date:"F d, Y" }}
+                </p>
+                {% endif %} {% if application.reviewer %}
+                <p class="mb-0">Reviewer: {{ application.reviewer.username }}</p>
+                {% endif %}
+              </div>
+              <div>
+                <a
+                  href="{% url 'admin_dashboard' %}"
+                  class="btn btn-outline-primary"
+                  >Back to Dashboard</a
+                >
+              </div>
+            </div>
+    
+            {% if application.review_comments %}
+            <hr />
+            <h6>Review Comments:</h6>
+            <p class="mb-0">{{ application.review_comments }}</p>
+            {% endif %}
+          </div>
     <div class="card">
         <div class="card-header bg-primary text-white">
             <h3 class="card-title mb-0">AFFIDAVIT</h3>

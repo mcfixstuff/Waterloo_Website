@@ -10,6 +10,39 @@
 <body class="bg-light">
 
 <div class="container my-4">
+          <!-- Status Banner -->
+          <div class="alert alert-info mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="alert-heading mb-0">
+                  Application Status: {{ application.get_status_display }}
+                </h5>
+                <p class="mb-0">
+                  Created: {{ application.created_at|date:"F d, Y" }}
+                </p>
+                {% if application.submitted_at %}
+                <p class="mb-0">
+                  Submitted: {{ application.submitted_at|date:"F d, Y" }}
+                </p>
+                {% endif %} {% if application.reviewer %}
+                <p class="mb-0">Reviewer: {{ application.reviewer.username }}</p>
+                {% endif %}
+              </div>
+              <div>
+                <a
+                  href="{% url 'admin_dashboard' %}"
+                  class="btn btn-outline-primary"
+                  >Back to Dashboard</a
+                >
+              </div>
+            </div>
+    
+            {% if application.review_comments %}
+            <hr />
+            <h6>Review Comments:</h6>
+            <p class="mb-0">{{ application.review_comments }}</p>
+            {% endif %}
+          </div>
     <div class="card">
         <div class="card-header bg-primary text-white">
             <h3 class="card-title mb-0">AUTHORIZATION TO RELEASE EDUCATIONAL RECORDS</h3>
@@ -41,12 +74,12 @@
                         <p>I <input type="text" class="form-control d-inline-block w-50" name="student_name" value="{{ user.username }}" required> hereby voluntarily authorize officials in the</p>
                         <p>University of Houston - 
                             <select class="form-select d-inline-block w-50" name="university_division" required>
-                                <option value="" selected disabled>Click Here to Select One</option>
-                                <option value="Main Campus">Main Campus</option>
-                                <option value="Downtown">Downtown</option>
-                                <option value="Clear Lake">Clear Lake</option>
-                                <option value="Victoria">Victoria</option>
-                            </select> 
+                                <option value="" disabled {% if not ferpa_form.university_division %}selected{% endif %}>Click Here to Select One</option>
+                                <option value="Main Campus" {% if ferpa_form.university_division == 'Main Campus' %}selected{% endif %}>Main Campus</option>
+                                <option value="Downtown" {% if ferpa_form.university_division == 'Downtown' %}selected{% endif %}>Downtown</option>
+                                <option value="Clear Lake" {% if ferpa_form.university_division == 'Clear Lake' %}selected{% endif %}>Clear Lake</option>
+                                <option value="Victoria" {% if ferpa_form.university_division == 'Victoria' %}selected{% endif %}>Victoria</option>
+                            </select>
                             identified below to disclose personally identifiable information from my educational records. (Please check the box or boxes that apply):
                         </p>
                     </div>
@@ -55,19 +88,19 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="offices[]" value="Office of the University Registrar" id="registrar">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="Office of the University Registrar" id="registrar" {% if ferpa_form and "Office of the University Registrar" in ferpa_form.offices %}checked{% endif %}>
                             <label class="form-check-label" for="registrar">Office of the University Registrar</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="offices[]" value="Scholarships and Financial Aid" id="financial_aid">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="Scholarships and Financial Aid" id="financial_aid" {% if ferpa_form and "Scholarships and Financial Aid" in ferpa_form.offices %}checked{% endif %}>
                             <label class="form-check-label" for="financial_aid">Scholarships and Financial Aid</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="offices[]" value="Student Financial Services" id="financial_services">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="Student Financial Services" id="financial_services" {% if ferpa_form and "Student Financial Services" in ferpa_form.offices %}checked{% endif %}>
                             <label class="form-check-label" for="financial_services">Student Financial Services</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="offices[]" value="Undergraduate Scholars @ UH (formally USD)" id="scholars">
+                            <input class="form-check-input" type="checkbox" name="offices[]" value="Undergraduate Scholars @ UH (formally USD)" id="scholars" {% if ferpa_form and "Undergraduate Scholars @ UH (formally USD)" in ferpa_form.offices %}checked{% endif %}>
                             <label class="form-check-label" for="scholars">Undergraduate Scholars @ UH (formally USD)</label>
                         </div>
                     </div>
@@ -94,23 +127,23 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Academic Advising Profile/Information" id="advising">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Academic Advising Profile/Information" id="advising" {% if ferpa_form and "Academic Advising Profile/Information" in ferpa_form.info_categories %}checked{% endif %}>
                             <label class="form-check-label" for="advising">Academic Advising Profile/Information</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Academic Records" id="academic">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Academic Records" id="academic" {% if ferpa_form and "Academic Records" in ferpa_form.info_categories %}checked{% endif %}>
                             <label class="form-check-label" for="academic">Academic Records</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="All University Records" id="all_records">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="All University Records" id="all_records" {% if ferpa_form and "All University Records" in ferpa_form.info_categories %}checked{% endif %}>
                             <label class="form-check-label" for="all_records">All University Records</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Billing/Financial Aid" id="billing">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Billing/Financial Aid" id="billing" {% if ferpa_form and "Billing/Financial Aid" in ferpa_form.info_categories %}checked{% endif %}>
                             <label class="form-check-label" for="billing">Billing/Financial Aid</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Disciplinary" id="disciplinary">
+                            <input class="form-check-input" type="checkbox" name="info_categories[]" value="Disciplinary" id="disciplinary" {% if ferpa_form and "Disciplinary" in ferpa_form.info_categories %}checked{% endif %}>
                             <label class="form-check-label" for="disciplinary">Disciplinary</label>
                         </div>
                     </div>
@@ -143,12 +176,12 @@
                     <div class="col-12">
                         <div class="mb-3">
                             <label for="release_to" class="form-label">This information may be released to:</label>
-                            <input type="text" class="form-control" id="release_to" name="release_to" required>
+                            <input type="text" class="form-control" id="release_to" name="release_to" value="{% if ferpa_form %}{{ ferpa_form.release_to }}{% endif %}" required>
                             <small class="form-text text-muted">[Print Name(s) of Individual(s) To Whom University May Disclose Information]</small>
                         </div>
                         <div class="mb-3">
                             <label for="additional_individuals" class="form-label">List Additional Individuals if Necessary:</label>
-                            <input type="text" class="form-control" id="additional_individuals" name="additional_individuals">
+                            <input type="text" class="form-control" id="additional_individuals" name="additional_individuals" value="{% if ferpa_form %}{{ ferpa_form.additional_individuals }}{% endif %}">
                             <small class="form-text text-muted">for the purpose of informing:</small>
                         </div>
                     </div>
@@ -157,31 +190,33 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Family" id="family">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Family" id="family" {% if ferpa_form and "Family" in ferpa_form.purposes %}checked{% endif %}>
                             <label class="form-check-label" for="family">Family</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Educational Institution" id="educational">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Educational Institution" id="educational" {% if ferpa_form and "Educational Institution" in ferpa_form.purposes %}checked{% endif %}>
                             <label class="form-check-label" for="educational">Educational Institution</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Honor or Award" id="honor">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Honor or Award" id="honor" {% if ferpa_form and "Honor or Award" in ferpa_form.purposes %}checked{% endif %}>
                             <label class="form-check-label" for="honor">Honor or Award</label>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Employer/Prospective Employer" id="employer">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Employer/Prospective Employer" id="employer" {% if ferpa_form and "Employer/Prospective Employer" in ferpa_form.purposes %}checked{% endif %}>
                             <label class="form-check-label" for="employer">Employer/Prospective Employer</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Public or Media of Scholarship" id="public">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Public or Media of Scholarship" id="public" {% if ferpa_form and "Public or Media of Scholarship" in ferpa_form.purposes %}checked{% endif %}>
                             <label class="form-check-label" for="public">Public or Media of Scholarship</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Other" id="other_purpose">
+                            <input class="form-check-input" type="checkbox" name="purposes[]" value="Other" id="other_purpose" {% if ferpa_form and "Other" in ferpa_form.purposes %}checked{% endif %}>
                             <label class="form-check-label" for="other_purpose">Other (Please Specify)</label>
-                            <input type="text" class="form-control mt-1" name="other_purpose_text" id="other_purpose_text" style="display: none;">
+                            <input type="text" class="form-control mt-1" name="other_purpose_text" id="other_purpose_text" 
+                                   value="{% if ferpa_form %}{{ ferpa_form.other_purpose_text }}{% endif %}" 
+                                   style="display: {% if ferpa_form and 'Other' in ferpa_form.purposes %}block{% else %}none{% endif %};">
                         </div>
                     </div>
                 </div>
@@ -190,7 +225,7 @@
                     <div class="col-12">
                         <div class="mb-3">
                             <label for="password" class="form-label">Please provide a password to obtain information via the phone:</label>
-                            <input type="text" class="form-control" id="password" name="password" maxlength="10" required>
+                            <input type="text" class="form-control" id="password" name="password" maxlength="10" value="{% if ferpa_form %}{{ ferpa_form.password }}{% endif %}" required>
                             <small class="form-text text-muted">The password should not contain more than ten (10) letters. You must provide the password to the individuals or agencies listed above. The University will not release information to the caller if the caller does not have the password. A new form must be completed to change your password.</small>
                         </div>
                     </div>
@@ -208,17 +243,17 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="peoplesoft_id" class="form-label">PeopleSoft I.D. Number:</label>
-                            <input type="text" class="form-control" id="peoplesoft_id" name="peoplesoft_id" required>
+                            <input type="text" class="form-control" id="peoplesoft_id" name="peoplesoft_id" value="{% if ferpa_form %}{{ ferpa_form.peoplesoft_id }}{% endif %}" required>
                         </div>
                         <div class="mb-3">
                             <label for="student_name_print" class="form-label">Student Name [please print]:</label>
-                            <input type="text" class="form-control" id="student_name_print" name="student_name_print" required>
+                            <input type="text" class="form-control" id="student_name_print" name="student_name_print" value="{% if ferpa_form %}{{ ferpa_form.student_name }}{% else %}{{ user.username }}{% endif %}" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="form_date" class="form-label">Date:</label>
-                            <input type="date" class="form-control" id="form_date" name="form_date" required>
+                            <input type="date" class="form-control" id="form_date" name="form_date" value="{% if ferpa_form %}{{ ferpa_form.form_date|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}" required>
                         </div>
                     </div>
                 </div>

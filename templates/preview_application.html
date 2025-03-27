@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FERPA Authorization Form - Preview</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
@@ -12,193 +12,195 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
     />
-</head>
-<body class="bg-light">
-<div class="container my-4">
-    <!-- Status Banner -->
-    <div class="alert alert-info mb-4">
+  </head>
+  <body class="bg-light">
+    <div class="container my-4">
+      <!-- Status Banner -->
+      <div class="alert alert-info mb-4">
         <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h5 class="alert-heading mb-0">Application Status: {{ application.get_status_display }}</h5>
-                <p class="mb-0">Created: {{ application.created_at|date:"F d, Y" }}</p>
-                {% if application.submitted_at %}
-                    <p class="mb-0">Submitted: {{ application.submitted_at|date:"F d, Y" }}</p>
-                {% endif %}
-                {% if application.reviewer %}
-                    <p class="mb-0">Reviewer: {{ application.reviewer.username }}</p>
-                {% endif %}
-            </div>
-            <div>
-                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">Back to Dashboard</a>
-            </div>
+          <div>
+            <h5 class="alert-heading mb-0">
+              Application Status: {{ application.get_status_display }}
+            </h5>
+            <p class="mb-0">
+              Created: {{ application.created_at|date:"F d, Y" }}
+            </p>
+            {% if application.submitted_at %}
+            <p class="mb-0">
+              Submitted: {{ application.submitted_at|date:"F d, Y" }}
+            </p>
+            {% endif %} {% if application.reviewer %}
+            <p class="mb-0">Reviewer: {{ application.reviewer.username }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <a
+              href="{% url 'admin_dashboard' %}"
+              class="btn btn-outline-primary"
+              >Back to Dashboard</a
+            >
+          </div>
         </div>
-        
+
         {% if application.review_comments %}
-        <hr>
+        <hr />
         <h6>Review Comments:</h6>
         <p class="mb-0">{{ application.review_comments }}</p>
         {% endif %}
-    </div>
+      </div>
 
-    <!-- Form Preview -->
-    <div class="card">
+      <!-- Form Preview -->
+      <div class="card">
         <div class="card-header bg-primary text-white">
-            <h3 class="card-title mb-0">AUTHORIZATION TO RELEASE EDUCATIONAL RECORDS</h3>
-            <p class="mb-0">Form No. OGC-SF-2006-02</p>
-            <small>Family Educational Rights and Privacy Act of 1974 as Amended (FERPA)</small>
+          <h3 class="card-title mb-0">
+            AUTHORIZATION TO RELEASE EDUCATIONAL RECORDS
+          </h3>
+          <p class="mb-0">Form No. OGC-SF-2006-02</p>
+          <small
+            >Family Educational Rights and Privacy Act of 1974 as Amended
+            (FERPA)</small
+          >
         </div>
         <div class="card-body">
-            <!-- Start: Preview (No form tags) -->
-            <p>
-              I <strong>{{ ferpa_form.student_name }}</strong> hereby voluntarily authorize
-              officials in the University of Houston - <strong>{{ ferpa_form.university_division }}</strong>
-              identified below to disclose personally identifiable information from my
-              educational records.
-            </p>
-            
-            <!-- Offices -->
-            <p>
-              <strong>Selected Offices:</strong>
-              {% if ferpa_form.offices %}
-                {% for office in ferpa_form.offices %}
-                  {{ office }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-                {% if 'Other' in ferpa_form.offices and ferpa_form.other_office_text %}
-                  ({{ ferpa_form.other_office_text }})
-                {% endif %}
-              {% else %}
-                None
+          <!-- Start: Preview (No form tags) -->
+          <p>
+            I <strong>{{ ferpa_form.student_name }}</strong> hereby voluntarily
+            authorize officials in the University of Houston -
+            <strong>{{ ferpa_form.university_division }}</strong>
+            identified below to disclose personally identifiable information
+            from my educational records.
+          </p>
+
+          <!-- Offices -->
+          <p>
+            <strong>Selected Offices:</strong>
+            {% if ferpa_form.offices %}
+              {% for office in ferpa_form.offices %}
+                {{ office }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+              {% if 'Other' in ferpa_form.offices and ferpa_form.other_office_text %}
+                ({{ ferpa_form.other_office_text }})
               {% endif %}
-            </p>
-            
-            <!-- Information Categories -->
-            <p>
-              <strong>Information Categories:</strong>
-              {% if ferpa_form.info_categories %}
-                {% for category in ferpa_form.info_categories %}
-                  {{ category }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-                {% if 'Other' in ferpa_form.info_categories and ferpa_form.other_info_text %}
-                  ({{ ferpa_form.other_info_text }})
-                {% endif %}
-              {% else %}
-                None
+            {% else %}
+              None
+            {% endif %}
+          </p>
+
+          <!-- Information Categories -->
+          <p>
+            <strong>Information Categories:</strong>
+            {% if ferpa_form.info_categories %}
+              {% for category in ferpa_form.info_categories %}
+                {{ category }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+              {% if 'Other' in ferpa_form.info_categories and ferpa_form.other_info_text %}
+                ({{ ferpa_form.other_info_text }})
               {% endif %}
-            </p>
-            
-            <!-- Release To & Additional Individuals -->
-            <p><strong>Released To:</strong> {{ ferpa_form.release_to }}</p>
-            <p>
-              <strong>Additional Individuals:</strong>
-              {% if ferpa_form.additional_individuals %}
-                {{ ferpa_form.additional_individuals }}
-              {% else %}
-                None
+            {% else %}
+              None
+            {% endif %}
+          </p>
+
+          <!-- Release To & Additional Individuals -->
+          <p><strong>Released To:</strong> {{ ferpa_form.release_to }}</p>
+          <p>
+            <strong>Additional Individuals:</strong>
+            {% if ferpa_form.additional_individuals %}{{ ferpa_form.additional_individuals }}{% else %}None{% endif %}
+          </p>
+
+          <!-- Purposes -->
+          <p>
+            <strong>Purpose(s):</strong>
+            {% if ferpa_form.purposes %}
+              {% for purpose in ferpa_form.purposes %}
+                {{ purpose }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+              {% if 'Other' in ferpa_form.purposes and ferpa_form.other_purpose_text %}
+                ({{ ferpa_form.other_purpose_text }})
               {% endif %}
+            {% else %}
+              None
+            {% endif %}
+          </p>
+
+          <!-- Password -->
+          <p>
+            <strong
+              >Please provide a password to obtain information via the
+              phone:</strong
+            >
+            {{ ferpa_form.password }}
+          </p>
+
+          <div class="alert alert-info">
+            <p class="mb-0">
+              <strong>
+                This is to attest that I am the student signing this form. I
+                understand the information may be released orally or in the form
+                of copies of written records, as preferred by the requester.
+                This authorization will remain in effect from the date it is
+                executed until revoked by me, in writing, and delivered to
+                Department(s) identified above.
+              </strong>
             </p>
-            
-            <!-- Purposes -->
-            <p>
-              <strong>Purpose(s):</strong>
-              {% if ferpa_form.purposes %}
-                {% for purpose in ferpa_form.purposes %}
-                  {{ purpose }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-                {% if 'Other' in ferpa_form.purposes and ferpa_form.other_purpose_text %}
-                  ({{ ferpa_form.other_purpose_text }})
-                {% endif %}
-              {% else %}
-                None
-              {% endif %}
-            </p>
-            
-            <!-- Password -->
-            <p>
-              <strong>Please provide a password to obtain information via the phone:</strong>
-              {{ ferpa_form.password }}
-            </p>
-            
-            <div class="alert alert-info">
-              <p class="mb-0">
-                <strong>
-                  This is to attest that I am the student signing this form. I understand
-                  the information may be released orally or in the form of copies of
-                  written records, as preferred by the requester. This authorization will
-                  remain in effect from the date it is executed until revoked by me,
-                  in writing, and delivered to Department(s) identified above.
-                </strong>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p>
+                <strong>PeopleSoft I.D. Number:</strong> {{ferpa_form.peoplesoft_id }}
+              </p>
+              <p>
+                <strong>Student Name [please print]:</strong> {{ferpa_form.student_name }}
               </p>
             </div>
+            <div class="col-md-6">
+              <p>
+                <strong>Date:</strong> {{ ferpa_form.form_date|date:"F d, Y" }}
+              </p>
+            </div>
+          </div>
 
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <p><strong>PeopleSoft I.D. Number:</strong> {{ ferpa_form.peoplesoft_id }}</p>
-                <p><strong>Student Name [please print]:</strong> {{ ferpa_form.student_name }}</p>
-              </div>
-              <div class="col-md-6">
-                <p><strong>Date:</strong> {{ ferpa_form.form_date|date:"F d, Y" }}</p>
-              </div>
+          <!-- Signature Preview -->
+          <div class="mb-4">
+            <label class="form-label"
+              ><strong>Student Signature:</strong></label
+            >
+            {% if user_signature %}
+            <div class="border p-3 mb-2 text-center">
+              <img
+                src="{{ user_signature }}"
+                alt="Student Signature"
+                class="img-fluid"
+                style="max-height: 100px"
+              />
             </div>
-            
-            <!-- Signature Preview -->
-            <div class="mb-4">
-                <label class="form-label"><strong>Student Signature:</strong></label>
-                {% if user_signature %}
-                  <div class="border p-3 mb-2 text-center">
-                      <img src="{{ user_signature }}" alt="Student Signature"
-                           class="img-fluid" style="max-height: 100px;" />
-                  </div>
-                {% else %}
-                  <p class="text-muted">No signature on file.</p>
-                {% endif %}
-            </div>
+            {% else %}
+            <p class="text-muted">No signature on file.</p>
+            {% endif %}
+          </div>
 
-            <!-- Footer -->
-            <div class="mt-4">
-              <small class="text-muted">
-                Please Retain a Copy for your Records
-                <br />
-                Document may be Submitted to Registrar's Office
-              </small>
-              <small class="text-muted d-block mt-2">
-                FERPA Authorization Form<br />
-                OGC-SF-2006-02 Revised 11.10.2022<br />
-                Page 1 of 1
-              </small>
-              <small class="text-muted d-block mt-2 fst-italic">
-                Note: Modification of this Form requires approval of OGC
-              </small>
-            </div>
-            <!-- End: Preview -->
+          <!-- Footer -->
+          <div class="mt-4">
+            <small class="text-muted">
+              Please Retain a Copy for your Records
+              <br />
+              Document may be Submitted to Registrar's Office
+            </small>
+            <small class="text-muted d-block mt-2">
+              FERPA Authorization Form<br />
+              OGC-SF-2006-02 Revised 11.10.2022<br />
+              Page 1 of 1
+            </small>
+            <small class="text-muted d-block mt-2 fst-italic">
+              Note: Modification of this Form requires approval of OGC
+            </small>
+          </div>
+          <!-- End: Preview -->
         </div>
+      </div>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="mt-4 d-flex justify-content-between">
-        
-        {% if application.status == 'draft' and application.user.email == request.session.user_email %}
-        <div>
-            <a href="{% url 'edit_ferpa_form' application.id %}" class="btn btn-primary me-2">Edit Form</a>
-            <a href="{% url 'submit_application' application.id %}" class="btn btn-success">Submit for Approval</a>
-        </div>
-        {% endif %}
-        
-        {% if application.status == 'pending' and user.role in 'manager,superuser' %}
-        <div>
-            <a href="{% url 'review_application' application.id %}" class="btn btn-primary">Review Application</a>
-        </div>
-        {% endif %}
-        
-        {% if application.status == 'returned' and application.user.email == request.session.user_email %}
-        <div>
-            <a href="{% url 'edit_ferpa_form' application.id %}" class="btn btn-warning">Edit & Resubmit</a>
-        </div>
-        {% endif %}
-    </div>
-</div>
-
-<script
-  src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"
-></script>
-</body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>
