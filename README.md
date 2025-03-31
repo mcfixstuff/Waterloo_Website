@@ -42,6 +42,6 @@ Here are some screenshots of the project:
   2. Microsoft authenticates the user and returns an **access token**.
   3. The system fetches **user details** and stores the token & email in the session.
   4. Users are redirected to the **Admin Dashboard**.
-  5. Superusers can **toggle user status** or **change user roles**.
+  5. Superusers can **toggle user status** or **change user roles**
   6. Logout clears the session and redirects back to login.
 - This diagram provides a **clear overview of how authentication and user role management work** in the system.
