@@ -1,30 +1,30 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, FileResponse
 from django.conf import settings
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from admin_panel.models import User
-import msal
-from django.db.models import Q
-import requests
-from .forms import UserSignatureForm,FERPAForm,TexasResidencyAffidavit,Application
-import os
+from django.template.defaultfilters import date as date_filter
 from django.contrib import messages
+from django.db.models import Q
+
+from admin_panel.models import User, Application, FERPAForm, TexasResidencyAffidavit
+from .forms import UserSignatureForm
+
+import requests
 import tempfile
 import subprocess
-from django.http import FileResponse
-from django.template.defaultfilters import date as date_filter
+import os
+import msal
+from shutil import copyfile
+
 
 # Authentication Views
 def show_login_page(request):
-    """Render the login page."""
     return render(request, "admin_panel/login.html")
-        
 
 
 @csrf_exempt
 def trigger_microsoft_login(request):
-    """Initiate Microsoft OAuth login flow."""
     auth_url = (
         f"{settings.MICROSOFT_AUTH['AUTHORITY']}/oauth2/v2.0/authorize"
         f"?client_id={settings.MICROSOFT_AUTH['CLIENT_ID']}"
@@ -36,28 +36,24 @@ def trigger_microsoft_login(request):
     )
     return redirect(auth_url)
 
+
 def login_view(request):
-    """Handle Microsoft OAuth callback and user authentication."""
     if "code" in request.GET:
         auth_code = request.GET["code"]
-
         msal_app = msal.ConfidentialClientApplication(
             settings.MICROSOFT_AUTH["CLIENT_ID"],
             client_credential=settings.MICROSOFT_AUTH["CLIENT_SECRET"],
             authority=settings.MICROSOFT_AUTH["AUTHORITY"],
         )
-
         token_response = msal_app.acquire_token_by_authorization_code(
             auth_code,
             scopes=["User.Read"],
             redirect_uri=settings.MICROSOFT_AUTH["REDIRECT_URI"],
         )
-
         if "access_token" in token_response:
             access_token = token_response["access_token"]
             headers = {"Authorization": f"Bearer {access_token}"}
             user_info = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers).json()
-
             user, created = User.objects.get_or_create(
                 microsoft_id=user_info["id"],
                 defaults={
@@ -66,25 +62,22 @@ def login_view(request):
                     "role": "basicuser" if User.objects.exists() else "superuser",
                 }
             )
-
             if not user.status:
                 return HttpResponse("Your account has been disabled. Please contact the administrator.", status=403)
-
             request.session["access_token"] = access_token
             request.session["user_email"] = user_info.get("mail")
-
             return redirect("admin_dashboard")
-
     return redirect("login")
 
+
 def logout_view(request):
-    """Handle user logout and session cleanup."""
     request.session.flush()
     logout_url = (
         f"https://login.microsoftonline.com/common/oauth2/v2.0/logout"
         f"?post_logout_redirect_uri={settings.MICROSOFT_AUTH['REDIRECT_URI']}"
     )
     return redirect('login')
+
 
 # Dashboard Views
 def admin_dashboard(request):
@@ -96,10 +89,10 @@ def admin_dashboard(request):
     headers = {"Authorization": f"Bearer {access_token}"}
     user_info = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers).json()
     current_user = User.objects.filter(email=user_info.get("mail")).first()
-    
+
     if current_user and not current_user.status:
         return HttpResponse("Your account has been disabled. Please contact the administrator.", status=403)
-    
+
     # Role priority for sorting
     role_priority = {"superuser": 1, "manager": 2, "basicuser": 3}
 
@@ -115,6 +108,7 @@ def admin_dashboard(request):
         "disabled_users": disabled_users,
         "active_page": "dashboard"
     })
+
 
 # User Management Views
 def toggle_user_status(request, user_id):
@@ -135,6 +129,7 @@ def toggle_user_status(request, user_id):
     user.save()
 
     return redirect("admin_dashboard")
+
 
 def change_user_role(request, user_id):
     """Change user role (superuser only)."""
@@ -157,22 +152,19 @@ def change_user_role(request, user_id):
 
     return redirect("admin_dashboard")
 
-#PROJECT 0.2
 
-
-
-# Update your existing upload_signature view or add it if it doesn't exist
+# Signature and Application Views
 def upload_signature(request):
     """Handle user signature upload."""
     if "access_token" not in request.session:
         return redirect("login")
-    
+
     email = request.session.get("user_email")
     if not email:
         return redirect("login")
-    
+
     user = get_object_or_404(User, email=email)
-    
+
     if request.method == 'POST':
         form = UserSignatureForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
@@ -180,9 +172,7 @@ def upload_signature(request):
             return redirect('Applications')  # Redirect to applications page after success
     else:
         form = UserSignatureForm(instance=user)
-    
-    # You don't need a separate template as you're using a modal in your existing template
-    # Pass the form to the applications template
+
     context = {
         'active_page': 'Applications',
         'user': user,
@@ -191,22 +181,20 @@ def upload_signature(request):
     return render(request, "admin_panel/Applications.html", context)
 
 
-# 3. Update the Applications view to include the signature form
 def Applications(request):
     """Render the Applications page with signature form and applications."""
     if "access_token" not in request.session:
         return redirect("login")
-    
+
     email = request.session.get("user_email")
     if not email:
         return redirect("login")
-    
+
     user = get_object_or_404(User, email=email)
     signature_form = UserSignatureForm(instance=user)
-    
-    # Fetch all applications for this user
+
     applications = Application.objects.filter(user=user).order_by('-updated_at')
-    
+
     context = {
         'active_page': 'Applications',
         'user': user,
@@ -215,34 +203,28 @@ def Applications(request):
     }
     return render(request, "admin_panel/Applications.html", context)
 
+
 def ApplicationApprovals(request):
     """Render the ApplicationApprovals view with permission check."""
     if "access_token" not in request.session:
         return redirect("login")
-    
+
     email = request.session.get("user_email")
     if not email:
         return redirect("login")
-    
+
     current_user = User.objects.filter(email=email).first()
     if not current_user or (current_user.role not in ["superuser", "manager"]):
         return HttpResponseForbidden("You do not have permission to access this page.")
 
-    # 1) Stats - now using Application model instead of FERPAForm
     pending_count = Application.objects.filter(status='pending').count()
     approved_count = Application.objects.filter(status='approved').count()
     returned_count = Application.objects.filter(status='returned').count()
 
-    # For "Today", let's get applications submitted today
     today = timezone.now().date()
-    today_count = Application.objects.filter(
-        submitted_at__date=today
-    ).count()
+    today_count = Application.objects.filter(submitted_at__date=today).count()
 
-    # 2) Pending applications for the table
     pending_forms = Application.objects.filter(status='pending').order_by('-created_at')
-
-    # 3) Recent applications for the "Recent Activity"
     recent_forms = Application.objects.filter(
         status__in=["approved", "returned"]
     ).order_by('-reviewed_at', '-updated_at')[:5]
@@ -260,326 +242,124 @@ def ApplicationApprovals(request):
     return render(request, "admin_panel/ApplicationApprovalsDashboard.html", context)
 
 
-
-
-
 def select_form_type(request):
     """Handle form type selection from the modal without creating a draft record immediately."""
     if "access_token" not in request.session:
         return redirect("login")
-        
+
     email = request.session.get("user_email")
     if not email:
         return redirect("login")
-        
+
     user = get_object_or_404(User, email=email)
-        
+
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
-        
-        # Store the form type selection in session instead of creating an application
         if form_type in ['ferpa_authorization', 'texas_affidavit']:
-            # Map the form type to application_type
             application_type = {
                 'ferpa_authorization': 'ferpa',
                 'texas_affidavit': 'texas_residency'
             }.get(form_type)
-            
-            # Store the selected type in session for later use when form is actually saved
             request.session['selected_form_type'] = application_type
-                
-            # Render the appropriate form template without creating an application yet
+
             if form_type == 'ferpa_authorization':
-                context = {
-                    'user': user,
-                    'active_page': 'Applications'
-                }
+                context = {'user': user, 'active_page': 'Applications'}
                 return render(request, 'FERPA_Authorization_form.html', context)
             elif form_type == 'texas_affidavit':
-                context = {
-                    'user': user,
-                    'active_page': 'Applications'
-                }
+                context = {'user': user, 'active_page': 'Applications'}
                 return render(request, 'Texas_Residency_Affidavit_Form.html', context)
-            elif form_type == 'leave_absence':
-                return HttpResponse('leave_absence_form')
         else:
             messages.error(request, "Invalid form type selected")
-        
+
     return redirect('Applications')
-    
-    
-    
 
 
 def save_ferpa_form(request):
     """Save FERPA form data, creating an Application only when explicitly saved."""
     if "access_token" not in request.session:
         return redirect("login")
-    
+
     email = request.session.get("user_email")
     if not email:
         return redirect("login")
-    
+
     user = get_object_or_404(User, email=email)
-    
+
     if request.method == 'POST':
-        # Check if we're saving a draft or submitting
         is_draft = "save_as_draft" in request.POST
         is_submit = "submit_form" in request.POST
-        
-        # Only proceed with saving if explicitly requested
+
         if is_draft or is_submit:
-            # Get application ID if we already have one
             application_id = request.session.get('current_application_id')
-            
-            # If no existing application but we're saving or submitting
             if not application_id:
-                # Create a new application
                 application_type = request.session.get('selected_form_type')
                 if not application_type:
                     messages.error(request, "Form type not found. Please try again.")
                     return redirect('Applications')
-                
-                # Create the application record
+
                 application = Application.objects.create(
                     user=user,
                     type=application_type,
                     application_name=f"New {application_type.replace('_', ' ').title()} Application",
-                    status='draft' if is_draft else 'pending',
-                    submitted_at=None if is_draft else timezone.now()
+                    status="draft"
                 )
+                request.session['current_application_id'] = application.id
             else:
-                # Get existing application if we have an ID
-                try:
-                    application = Application.objects.get(id=application_id, user=user)
-                    
-                    # Update status based on button clicked
-                    if is_draft:
-                        application.status = "draft"
-                        application.submitted_at = None
-                    elif is_submit:
-                        application.status = "pending"
-                        application.submitted_at = timezone.now()
-                    
-                    application.save()
-                except Application.DoesNotExist:
-                    messages.error(request, "Application not found.")
-                    return redirect('Applications')
-            
-            # Create or update the FERPA form
-            ferpa_form, created = FERPAForm.objects.get_or_create(
-                application=application,
-                defaults={
-                    'student_name': request.POST.get('student_name', ''),
-                    'university_division': request.POST.get('university_division', ''),
-                    'peoplesoft_id': request.POST.get('peoplesoft_id', ''),
-                    'offices': request.POST.getlist('offices[]', []),
-                    'info_categories': request.POST.getlist('info_categories[]', []),
-                    'release_to': request.POST.get('release_to', ''),
-                    'additional_individuals': request.POST.get('additional_individuals', ''),
-                    'purposes': request.POST.getlist('purposes[]', []),
-                    'password': request.POST.get('password', ''),
-                    'form_date': request.POST.get('form_date', timezone.now().date()),
-                    'other_office_text': request.POST.get('other_office_text', ''),
-                    'other_info_text': request.POST.get('other_info_text', ''),
-                    'other_purpose_text': request.POST.get('other_purpose_text', ''),
-                }
-            )
-            
-            # If form already existed, update its fields
-            if not created:
-                ferpa_form.student_name = request.POST.get('student_name', '')
-                ferpa_form.university_division = request.POST.get('university_division', '')
-                ferpa_form.peoplesoft_id = request.POST.get('peoplesoft_id', '')
-                ferpa_form.offices = request.POST.getlist('offices[]', [])
-                ferpa_form.info_categories = request.POST.getlist('info_categories[]', [])
-                ferpa_form.release_to = request.POST.get('release_to', '')
-                ferpa_form.additional_individuals = request.POST.get('additional_individuals', '')
-                ferpa_form.purposes = request.POST.getlist('purposes[]', [])
-                ferpa_form.password = request.POST.get('password', '')
-                ferpa_form.form_date = request.POST.get('form_date', timezone.now().date())
-                ferpa_form.other_office_text = request.POST.get('other_office_text', '')
-                ferpa_form.other_info_text = request.POST.get('other_info_text', '')
-                ferpa_form.other_purpose_text = request.POST.get('other_purpose_text', '')
-                ferpa_form.save()
-            
-            # Update application name based on student name
-            application.application_name = f"FERPA Authorization - {ferpa_form.student_name}"
-            application.save()
-            
-            # If submitting, use the submit method to set timestamps properly
+                application = get_object_or_404(Application, id=application_id, user=user)
+
+            ferpa_form, created = FERPAForm.objects.get_or_create(application=application)
+            ferpa_form.student_name = request.POST.get("student_name", "")
+            ferpa_form.university_division = request.POST.get("university_division", "")
+            ferpa_form.peoplesoft_id = request.POST.get("peoplesoft_id", "")
+            ferpa_form.offices = request.POST.getlist("offices[]", [])
+            ferpa_form.info_categories = request.POST.getlist("info_categories[]", [])
+            ferpa_form.release_to = request.POST.get("release_to", "")
+            ferpa_form.additional_individuals = request.POST.get("additional_individuals", "")
+            ferpa_form.purposes = request.POST.getlist("purposes[]", [])
+            ferpa_form.password = request.POST.get("password", "")
+            ferpa_form.form_date = timezone.now().date()
+            ferpa_form.save()
+
             if is_submit:
-                application.submit()
+                application.status = "pending"
+                application.submitted_at = timezone.now()
+            else:
+                application.status = "draft"
+            application.updated_at = timezone.now()
+            application.application_name = f"FERPA Form - {ferpa_form.student_name}"
+            application.save()
 
-            # Clean up session
-            if 'current_application_id' in request.session:
-                del request.session['current_application_id']
-            if 'selected_form_type' in request.session:
-                del request.session['selected_form_type']
-            
-            messages.success(request, "FERPA Authorization form saved successfully.")
-        else:
-            # User is canceling - just redirect back without saving
-            if 'selected_form_type' in request.session:
-                del request.session['selected_form_type']
-        
-        # Redirect to Applications after saving or submitting
-        return redirect('Applications')
-    
-    # If not POST, just redirect to Applications
+            for opt in ["current_application_id", "selected_form_type"]:
+                request.session.pop(opt, None)
+
+            messages.success(request, "FERPA Authorization saved successfully.")
+
     return redirect('Applications')
-    """Save FERPA form data, creating an Application only when explicitly saved."""
-    if "access_token" not in request.session:
-        return redirect("login")
-    
-    email = request.session.get("user_email")
-    if not email:
-        return redirect("login")
-    
-    user = get_object_or_404(User, email=email)
-    
-    if request.method == 'POST':
-        # Check if we're saving a draft or submitting
-        is_draft = "save_as_draft" in request.POST
-        
-        # Get application ID if we already have one, otherwise use None
-        application_id = request.session.get('current_application_id')
-        application = None
-        
-        # If no existing application but we're saving (not just previewing)
-        if not application_id and (is_draft or "submit_form" in request.POST):
-            # Create a new application only if explicitly saving
-            application_type = request.session.get('selected_form_type')
-            if not application_type:
-                messages.error(request, "Form type not found. Please try again.")
-                return redirect('Applications')
-            
-            # Now create the application record since user has chosen to save
-            application = Application.objects.create(
-                user=user,
-                type=application_type,
-                application_name=f"New {application_type.replace('_', ' ').title()} Application",
-                status='draft' if is_draft else 'pending',
-                submitted_at=None if is_draft else timezone.now()
-            )
-            request.session['current_application_id'] = application.id
-        elif application_id:
-            # Get existing application if we have an ID
-            try:
-                application = Application.objects.get(id=application_id, user=user)
-                
-                # Update status based on button clicked
-                if is_draft:
-                    application.status = "draft"
-                    application.submitted_at = None
-                elif "submit_form" in request.POST:
-                    application.status = "pending"
-                    application.submitted_at = timezone.now()
-                
-                # Save the application if we're explicitly saving
-                if is_draft or "submit_form" in request.POST:
-                    application.save()
-            except Application.DoesNotExist:
-                messages.error(request, "Application not found.")
-                return redirect('Applications')
-        
-        # Only save the FERPA form data if we're explicitly saving
-        if application and (is_draft or "submit_form" in request.POST):
-            ferpa_form, created = FERPAForm.objects.get_or_create(
-                application=application,
-                defaults={
-                    'student_name': request.POST.get('student_name', ''),
-                    'university_division': request.POST.get('university_division', ''),
-                    'peoplesoft_id': request.POST.get('peoplesoft_id', ''),
-                    'offices': request.POST.getlist('offices[]', []),
-                    'info_categories': request.POST.getlist('info_categories[]', []),
-                    'release_to': request.POST.get('release_to', ''),
-                    'additional_individuals': request.POST.get('additional_individuals', ''),
-                    'purposes': request.POST.getlist('purposes[]', []),
-                    'password': request.POST.get('password', ''),
-                    'form_date': request.POST.get('form_date', timezone.now().date()),
-                    'other_office_text': request.POST.get('other_office_text', ''),
-                    'other_info_text': request.POST.get('other_info_text', ''),
-                    'other_purpose_text': request.POST.get('other_purpose_text', ''),
-                }
-            )
-            
-            # If form already existed, update its fields
-            if not created:
-                ferpa_form.student_name = request.POST.get('student_name', '')
-                ferpa_form.university_division = request.POST.get('university_division', '')
-                ferpa_form.peoplesoft_id = request.POST.get('peoplesoft_id', '')
-                ferpa_form.offices = request.POST.getlist('offices[]', [])
-                ferpa_form.info_categories = request.POST.getlist('info_categories[]', [])
-                ferpa_form.release_to = request.POST.get('release_to', '')
-                ferpa_form.additional_individuals = request.POST.get('additional_individuals', '')
-                ferpa_form.purposes = request.POST.getlist('purposes[]', [])
-                ferpa_form.password = request.POST.get('password', '')
-                ferpa_form.form_date = request.POST.get('form_date', timezone.now().date())
-                ferpa_form.other_office_text = request.POST.get('other_office_text', '')
-                ferpa_form.other_info_text = request.POST.get('other_info_text', '')
-                ferpa_form.other_purpose_text = request.POST.get('other_purpose_text', '')
-                ferpa_form.save()
-            
-            # Update application name based on student name
-            if application:
-                application.application_name = f"FERPA Authorization - {ferpa_form.student_name}"
-                application.save()
-                
-                # If submitting, use the submit method to set timestamps properly
-                if not is_draft and "submit_form" in request.POST:
-                    application.submit()
-
-            # Clean up session if we've saved
-            if 'current_application_id' in request.session:
-                del request.session['current_application_id']
-            if 'selected_form_type' in request.session:
-                del request.session['selected_form_type']
-        
-        # Redirect based on what button was clicked
-        if "preview" in request.POST and application:
-            # Just show preview without saving anything to the database
-            return redirect('preview_temp_application')  # You'll need to create this view
-        else:
-            # Redirect to Applications after saving or submitting
-            return redirect('Applications')
-    
-    # If not POST, just redirect to Applications
-    return redirect('Applications')
-
 
 
 def save_texas_affidavit_form(request):
     """Save Texas Residency Affidavit form data, creating an Application only when explicitly saved."""
     if "access_token" not in request.session:
         return redirect("login")
-    
+
     email = request.session.get("user_email")
     if not email:
         return redirect("login")
-    
+
     user = get_object_or_404(User, email=email)
-    
+
     if request.method == 'POST':
-        # Check if we're saving a draft or submitting
         is_draft = "save_as_draft" in request.POST
         is_submit = "submit_form" in request.POST
-        
-        # Only proceed with saving if explicitly requested
+
         if is_draft or is_submit:
-            # Get application ID if we already have one
             application_id = request.session.get('current_application_id')
-            
-            # If no existing application but we're saving or submitting
             if not application_id:
-                # Create a new application
                 application_type = request.session.get('selected_form_type')
                 if not application_type:
                     messages.error(request, "Form type not found. Please try again.")
                     return redirect('Applications')
-                
-                # Create the application record
+
                 application = Application.objects.create(
                     user=user,
                     type=application_type,
@@ -588,30 +368,24 @@ def save_texas_affidavit_form(request):
                     submitted_at=None if is_draft else timezone.now()
                 )
             else:
-                # Get existing application if we have an ID
                 try:
                     application = Application.objects.get(id=application_id, user=user)
-                    
-                    # Update status based on button clicked
                     if is_draft:
                         application.status = "draft"
                         application.submitted_at = None
                     elif is_submit:
                         application.status = "pending"
                         application.submitted_at = timezone.now()
-                    
                     application.save()
                 except Application.DoesNotExist:
                     messages.error(request, "Application not found.")
                     return redirect('Applications')
-            
-            # Process form data
+
             try:
                 student_dob = timezone.datetime.strptime(request.POST.get('student_dob', ''), '%Y-%m-%d').date()
             except (ValueError, TypeError):
                 student_dob = timezone.now().date()
-            
-            # Create or update the Texas Residency Affidavit
+
             texas_affidavit, created = TexasResidencyAffidavit.objects.get_or_create(
                 application=application,
                 defaults={
@@ -634,8 +408,7 @@ def save_texas_affidavit_form(request):
                     'notary_name': request.POST.get('notary_name', ''),
                 }
             )
-            
-            # If form already existed, update its fields
+
             if not created:
                 texas_affidavit.county_name = request.POST.get('county_name', '')
                 texas_affidavit.appeared_name = request.POST.get('appeared_name', '')
@@ -655,46 +428,36 @@ def save_texas_affidavit_form(request):
                 texas_affidavit.notary_year = request.POST.get('notary_year') or None
                 texas_affidavit.notary_name = request.POST.get('notary_name', '')
                 texas_affidavit.save()
-            
-            # Update application name based on full name
+
             application.application_name = f"Texas Residency Affidavit - {texas_affidavit.full_name}"
             application.save()
-            
-            # If submitting, use the submit method to set timestamps properly
+
             if is_submit:
+                # If you have a submit method, call it here
                 application.submit()
 
-            # Clean up session
-            if 'current_application_id' in request.session:
-                del request.session['current_application_id']
-            if 'selected_form_type' in request.session:
-                del request.session['selected_form_type']
-            
+            request.session.pop('current_application_id', None)
+            request.session.pop('selected_form_type', None)
+
             messages.success(request, "Texas Residency Affidavit saved successfully.")
         else:
-            # User is canceling - just redirect back without saving
-            if 'selected_form_type' in request.session:
-                del request.session['selected_form_type']
-        
-        # Redirect to Applications after saving or submitting
+            request.session.pop('selected_form_type', None)
+
         return redirect('Applications')
-    
-    # If not POST, just redirect to Applications
+
     return redirect('Applications')
+
+
 def preview_application(request, app_id):
-    """View function to display a read-only preview of an application form."""
-    # Get the application
+    """Display a read-only preview of an application form."""
     application = get_object_or_404(Application, id=app_id)
-    
-    # Check if the user is authorized to view the application
     current_user = User.objects.filter(email=request.session.get("user_email")).first()
     if not current_user or (current_user != application.user and current_user.role not in ["superuser", "manager"]):
         return HttpResponseForbidden("You do not have permission to view this application.")
-    
-    # Get the form based on application type
+
     ferpa_form = None
     texas_affidavit = None
-    
+
     if application.type == 'ferpa':
         ferpa_form = getattr(application, 'ferpa_form', None)
         if not ferpa_form:
@@ -707,192 +470,89 @@ def preview_application(request, app_id):
         template_name = "Preview_Texas_Residency_Affidavit.html"
     else:
         return HttpResponse("Unknown application type.", status=400)
-    
-    # Prepare context
+
     context = {
         "application": application,
         "user_signature": application.user.signature_image.url if application.user.signature_image else None,
     }
-    
-    # Add form-specific data to context
     if ferpa_form:
         context["ferpa_form"] = ferpa_form
     elif texas_affidavit:
         context["texas_affidavit"] = texas_affidavit
-    
+
     return render(request, template_name, context)
 
-
 def generate_pdf(request, app_id):
+    import os
     import tempfile
     import subprocess
-    import os
-    from django.http import HttpResponse, FileResponse
-    from django.shortcuts import get_object_or_404
     from django.conf import settings
+    from django.http import FileResponse, HttpResponse
     from django.template.defaultfilters import date as date_filter
-    from .models import Application, FERPAForm, TexasResidencyAffidavit
+    from django.shortcuts import get_object_or_404
+    from admin_panel.models import Application
 
+    # Retrieve the application
     application = get_object_or_404(Application, id=app_id)
 
-    # Choose template and context
+    # Here we assume the application is for a FERPA form.
     if application.type == 'ferpa':
-        form = getattr(application, 'ferpa_form', None)
-        if not form:
+        ferpa_form = getattr(application, 'ferpa_form', None)
+        if not ferpa_form:
             return HttpResponse("FERPA form not found", status=404)
-        template_filename = 'ferpa_template.tex'
+        # Format each list field so that every entry is preceded by "\item "
+        offices = "\n".join([f"\\item {office}" for office in ferpa_form.offices])
+        info_categories = "\n".join([f"\\item {cat}" for cat in ferpa_form.info_categories])
+        purposes = "\n".join([f"\\item {purpose}" for purpose in ferpa_form.purposes])
         context = {
-            'student_name': form.student_name,
-            'university_division': form.university_division,
-            'peoplesoft_id': form.peoplesoft_id,
-            'offices': ', '.join(form.offices),
-            'info_categories': ', '.join(form.info_categories),
-            'release_to': form.release_to,
-            'additional_individuals': form.additional_individuals or '',
-            'purposes': ', '.join(form.purposes),
-            'password': form.password,
-            'form_date': date_filter(form.form_date, "F d, Y"),
-            'signature': application.user.username,
-        }
-
-    elif application.type == 'texas_residency':
-        form = getattr(application, 'texas_residency_affidavit', None)
-        if not form:
-            return HttpResponse("Texas residency form not found", status=404)
-        template_filename = 'texas_residency_template.tex'
-        context = {
-            'county': form.county_name,
-            'appeared_name': form.appeared_name,
-            'full_name': form.full_name,
-            'age': form.age,
-            'college_name': form.college_name,
-            'day': form.day_of_month,
-            'month': form.month,
-            'year': form.year,
-            'signature': application.user.username,
-            'student_id': form.student_id,
-            'dob': date_filter(form.student_dob, "F d, Y"),
-            'notary_day': form.notary_day or '',
-            'notary_month': form.notary_month or '',
-            'notary_year': form.notary_year or '',
-            'notary_name': form.notary_name or '',
-            'graduated_check': '☒' if form.graduated_check else '☐',
-            'resided_check': '☒' if form.resided_check else '☐',
-            'permanent_resident_check': '☒' if form.permanent_resident_check else '☐',
+            'student_name': ferpa_form.student_name,
+            'university_division': ferpa_form.university_division,
+            'peoplesoft_id': ferpa_form.peoplesoft_id,
+            'offices': offices,
+            'info_categories': info_categories,
+            'release_to': ferpa_form.release_to,
+            'additional_individuals': ferpa_form.additional_individuals or "",
+            'purposes': purposes,
+            'password': ferpa_form.password,
+            'form_date': date_filter(ferpa_form.form_date, "F d, Y"),
+            'signature_path': 'signature.png' if application.user.signature_image else 'no_signature.png',
         }
     else:
         return HttpResponse("Unsupported form type", status=400)
 
-    # Load the LaTeX template
+    template_filename = 'ferpa_template.tex'
     tex_path = os.path.join(settings.LATEX_TEMPLATE_DIR, template_filename)
     if not os.path.exists(tex_path):
-        return HttpResponse(f"LaTeX template not found: {template_filename}", status=404)
+        return HttpResponse("Template not found", status=404)
 
+    # Read the LaTeX template.
     with open(tex_path, "r", encoding="utf-8") as f:
         tex_template = f.read()
 
-    # Fill in placeholders like <<key>>
-    for key, value in context.items():
-        tex_template = tex_template.replace(f"<<{key}>>", str(value))
-
-    # DEBUG
-    print("====== LaTeX Source ======")
-    print(tex_template)
-    print("==========================")
-
-    # Compile LaTeX
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tex_file = os.path.join(tmpdir, "form.tex")
-        with open(tex_file, "w", encoding="utf-8") as f:
-            f.write(tex_template)
-
-        try:
-            subprocess.run(
-                ["pdflatex", "-interaction=nonstopmode", "form.tex"],
-                cwd=tmpdir,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=True
-            )
-        except subprocess.CalledProcessError as e:
-            return HttpResponse(f"LaTeX compile error: {e}", status=500)
-
-        pdf_path = os.path.join(tmpdir, "form.pdf")
-        return FileResponse(open(pdf_path, "rb"), content_type="application/pdf")
-
-    import tempfile
-    import subprocess
-    import os
-    from django.http import HttpResponse, FileResponse
-    from django.shortcuts import get_object_or_404
-    from django.conf import settings
-    from django.template.defaultfilters import date as date_filter
-    from .models import Application, FERPAForm, TexasResidencyAffidavit
-
-    application = get_object_or_404(Application, id=app_id)
-
-    if application.type == 'ferpa':
-        form = getattr(application, 'ferpa_form', None)
-        if not form:
-            return HttpResponse("FERPA form not found", status=404)
-        template_filename = 'ferpa_template.tex'
-        context = {
-            'student_name': form.student_name,
-            'university_division': form.university_division,
-            'peoplesoft_id': form.peoplesoft_id,
-            'offices': ', '.join(form.offices),
-            'info_categories': ', '.join(form.info_categories),
-            'release_to': form.release_to,
-            'additional_individuals': form.additional_individuals or '',
-            'purposes': ', '.join(form.purposes),
-            'password': form.password,
-            'form_date': date_filter(form.form_date, "F d, Y"),
-            'signature': application.user.username,
-        }
-
-    elif application.type == 'texas_residency':
-        form = getattr(application, 'texas_residency_affidavit', None)
-        if not form:
-            return HttpResponse("Texas residency form not found", status=404)
-        template_filename = 'texas_residency_template.tex'
-        context = {
-            'county': form.county_name,
-            'appeared_name': form.appeared_name,
-            'full_name': form.full_name,
-            'age': form.age,
-            'college_name': form.college_name,
-            'day': form.day_of_month,
-            'month': form.month,
-            'year': form.year,
-            'signature': application.user.username,
-            'student_id': form.student_id,
-            'dob': date_filter(form.student_dob, "F d, Y"),
-            'notary_day': form.notary_day or '',
-            'notary_month': form.notary_month or '',
-            'notary_year': form.notary_year or '',
-            'notary_name': form.notary_name or '',
-            'graduated_check': form.graduated_check,
-            'resided_check': form.resided_check,
-            'permanent_resident_check': form.permanent_resident_check,
-        }
-    else:
-        return HttpResponse("Unsupported form type", status=400)
-
-    tex_path = os.path.join(settings.LATEX_TEMPLATE_DIR, template_filename)
-    with open(tex_path, "r", encoding="utf-8") as f:
-        tex_template = f.read()
-
-    # Replace all placeholders like <<key>> with actual values
+    # Replace all placeholders like <<key>> with their corresponding values.
     for key, value in context.items():
         tex_template = tex_template.replace(f"<<{key}>>", str(value))
 
     with tempfile.TemporaryDirectory() as tmpdir:
+        # Write the rendered LaTeX source to a file.
         tex_file_path = os.path.join(tmpdir, "form.tex")
         with open(tex_file_path, "w", encoding="utf-8") as f:
             f.write(tex_template)
 
+        # Handle the signature image.
+        if context['signature_path']:
+            if context['signature_path'] == 'signature.png':
+                src = application.user.signature_image.path
+            else:
+                src = os.path.join(settings.LATEX_TEMPLATE_DIR, context['signature_path'])
+            dest = os.path.join(tmpdir, "signature.png")
+            if os.path.exists(src):
+                from shutil import copyfile
+                copyfile(src, dest)
+
+        # Run pdflatex to compile the .tex file.
         try:
-            subprocess.run(
+            result = subprocess.run(
                 ["pdflatex", "-interaction=nonstopmode", "form.tex"],
                 cwd=tmpdir,
                 stdout=subprocess.PIPE,
@@ -900,104 +560,12 @@ def generate_pdf(request, app_id):
                 check=True
             )
         except subprocess.CalledProcessError as e:
-            return HttpResponse(f"LaTeX compile error: {e}", status=500)
+            error_output = e.stderr.decode() + "\n" + e.stdout.decode()
+            return HttpResponse(f"LaTeX compile error:\n\n{error_output}", status=500)
 
         pdf_path = os.path.join(tmpdir, "form.pdf")
         return FileResponse(open(pdf_path, "rb"), content_type="application/pdf")
 
-    import os
-    import subprocess
-    import tempfile
-    from django.http import FileResponse, HttpResponse
-    from django.template.loader import render_to_string
-    from django.shortcuts import get_object_or_404
-    from django.conf import settings
-    from django.template.defaultfilters import date as date_filter
-    from .models import Application, FERPAForm, TexasResidencyAffidavit
-
-    application = get_object_or_404(Application, id=app_id)
-
-    # Choose template and context
-    if application.type == 'ferpa':
-        form = getattr(application, 'ferpa_form', None)
-        if not form:
-            return HttpResponse("FERPA form not found", status=404)
-        template_filename = 'ferpa_template.tex'
-        context = {
-            'student_name': form.student_name,
-            'university_division': form.university_division,
-            'peoplesoft_id': form.peoplesoft_id,
-            'offices': ', '.join(form.offices),
-            'info_categories': ', '.join(form.info_categories),
-            'release_to': form.release_to,
-            'additional_individuals': form.additional_individuals or '',
-            'purposes': ', '.join(form.purposes),
-            'password': form.password,
-            'form_date': date_filter(form.form_date, "F d, Y"),
-            'signature': application.user.username,
-        }
-
-    elif application.type == 'texas_residency':
-        form = getattr(application, 'texas_residency_affidavit', None)
-        if not form:
-            return HttpResponse("Texas residency form not found", status=404)
-        template_filename = 'texas_residency_affidavit_template.tex'
-        context = {
-            'county': form.county_name,
-            'appeared_name': form.appeared_name,
-            'full_name': form.full_name,
-            'age': form.age,
-            'college_name': form.college_name,
-            'day': form.day_of_month,
-            'month': form.month,
-            'year': form.year,
-            'signature': application.user.username,
-            'student_id': form.student_id,
-            'dob': date_filter(form.student_dob, "F d, Y"),
-            'notary_day': form.notary_day or '',
-            'notary_month': form.notary_month or '',
-            'notary_year': form.notary_year or '',
-            'notary_name': form.notary_name or '',
-            'graduated_check': form.graduated_check,
-            'resided_check': form.resided_check,
-            'permanent_resident_check': form.permanent_resident_check,
-        }
-    else:
-        return HttpResponse("Unsupported form type", status=400)
-
-    # Load LaTeX template
-    tex_path = os.path.join(settings.LATEX_TEMPLATE_DIR, template_filename)
-    with open(tex_path, "r", encoding="utf-8") as f:
-        tex_template = f.read()
-
-    # Fill in placeholders
-    for key, value in context.items():
-        tex_template = tex_template.replace(f"{{{{ {key} }}}}", str(value))
-
-    # DEBUG print the rendered .tex to terminal
-    print("====== LaTeX Source ======")
-    print(tex_template)
-    print("==========================")
-
-    # Compile LaTeX
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tex_file = os.path.join(tmpdir, "form.tex")
-        with open(tex_file, "w", encoding="utf-8") as f:
-            f.write(tex_template)
-
-        try:
-            subprocess.run(
-                ["pdflatex", "-interaction=nonstopmode", "form.tex"],
-                cwd=tmpdir,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=True
-            )
-        except subprocess.CalledProcessError as e:
-            return HttpResponse(f"LaTeX compile error: {e}", status=500)
-
-        pdf_path = os.path.join(tmpdir, "form.pdf")
-        return FileResponse(open(pdf_path, "rb"), content_type="application/pdf")
 
 def approve_form(request, app_id):
     """Approve an application if the user is manager or superuser."""
@@ -1012,15 +580,9 @@ def approve_form(request, app_id):
     if not current_user or current_user.role not in ["superuser", "manager"]:
         return HttpResponseForbidden("You do not have permission to approve forms.")
 
-    # Fetch the application that is pending
     application = get_object_or_404(Application, id=app_id, status="pending")
-
-    # Approve the application using the built-in method
     application.approve(reviewer=current_user)
-
-    # Redirect back to approvals page
     return redirect("ApplicationApprovals")
-
 
 
 def return_form(request, app_id):
@@ -1036,26 +598,14 @@ def return_form(request, app_id):
     if not current_user or current_user.role not in ["superuser", "manager"]:
         return HttpResponseForbidden("You do not have permission to return forms.")
 
-    # Get form review comments from POST request
     comments = request.POST.get("comments", "")
-    
-    # If there's no POST request, redirect to a form that collects comments
     if request.method != "POST":
-        # Get the application
         application = get_object_or_404(Application, id=app_id, status="pending")
-        context = {
-            "application": application,
-            "user": current_user
-        }
+        context = {"application": application, "user": current_user}
         return render(request, "return_form.html", context)
-    
-    # Fetch the application that is pending
+
     application = get_object_or_404(Application, id=app_id, status="pending")
-
-    # Return the application using the built-in method
     application.return_for_revision(reviewer=current_user, comments=comments)
-
-    # Redirect back to approvals page
     return redirect("ApplicationApprovals")
 
 
@@ -1072,7 +622,6 @@ def edit_ferpa_form(request, app_id):
     if not current_user:
         return redirect("login")
 
-    # 1) Fetch the application, ensuring user is the owner and it's in draft or returned
     application = get_object_or_404(
         Application,
         id=app_id,
@@ -1081,30 +630,61 @@ def edit_ferpa_form(request, app_id):
         type="ferpa"
     )
 
-    # Get the associated FERPA form
     try:
         ferpa_form = application.ferpa_form
     except FERPAForm.DoesNotExist:
         return HttpResponse("FERPA form data not found for this application.", status=404)
 
     if request.method == "POST":
-        # 2) Decide if user wants to "Save as Draft" or "Submit Form"
-        if "save_as_draft" in request.POST:
-            form_status = "draft"
-            submitted_time = None
-        else:
-            form_status = "pending"
-            submitted_time = timezone.now()
+        form_status = "draft" if "save_as_draft" in request.POST else "pending"
+        submitted_time = None if form_status == "draft" else timezone.now()
 
-        # 3) Update existing ferpa_form record with new data
+        def latex_checkboxes(selected, all_options):
+            lines = []
+            for opt in all_options:
+                symbol = r"\boxtimes" if opt in selected else r"\square"
+                lines.append(f"\\item ${symbol}$ {opt}")
+            return "\n".join(lines)
+
+        selected_offices = request.POST.getlist("offices[]")
+        selected_categories = request.POST.getlist("info_categories[]")
+        selected_purposes = request.POST.getlist("purposes[]")
+
+        ALL_OFFICES = [
+            "Office of the University Registrar",
+            "Scholarships and Financial Aid",
+            "Student Business Services",
+            "Admissions",
+            "Student Success Center",
+            "Academic Advising",
+            "Academic Dean’s Office",
+            "Other"
+        ]
+        ALL_CATEGORIES = [
+            "Academic Records",
+            "Billing/Financial Aid",
+            "Student Conduct",
+            "Grades/Academic Standing",
+            "Enrollment",
+            "Other"
+        ]
+        ALL_PURPOSES = [
+            "Family",
+            "Employer/Prospective Employer",
+            "Health Insurance",
+            "Legal",
+            "Scholarships/Financial Aid",
+            "Other"
+        ]
+
         ferpa_form.student_name = request.POST.get("student_name", "")
         ferpa_form.university_division = request.POST.get("university_division", "")
         ferpa_form.peoplesoft_id = request.POST.get("peoplesoft_id", "")
-        ferpa_form.offices = request.POST.getlist("offices[]", [])
-        ferpa_form.info_categories = request.POST.getlist("info_categories[]", [])
+        ferpa_form.offices = selected_offices
+        ferpa_form.info_categories = selected_categories
         ferpa_form.release_to = request.POST.get("release_to", "")
         ferpa_form.additional_individuals = request.POST.get("additional_individuals", "")
-        ferpa_form.purposes = request.POST.getlist("purposes[]", [])
+        ferpa_form.purposes = selected_purposes
         ferpa_form.password = request.POST.get("password", "")
         ferpa_form.form_date = request.POST.get("form_date", timezone.now().date())
         ferpa_form.other_office_text = request.POST.get("other_office_text", "")
@@ -1112,22 +692,21 @@ def edit_ferpa_form(request, app_id):
         ferpa_form.other_purpose_text = request.POST.get("other_purpose_text", "")
         ferpa_form.save()
 
-        # Update the application status
         application.status = form_status
         application.submitted_at = submitted_time
+        application.application_name = f"FERPA Authorization - {ferpa_form.student_name}"
         application.save()
 
-        # If submitting (not draft), use the submit method to set timestamps properly
         if form_status == "pending":
             application.submit()
 
         return redirect("Applications")
 
-    # If GET, pre-fill the same HTML template with ferpa_form data
     context = {
         "ferpa_form": ferpa_form,
         "application": application,
-        "user": current_user
+        "user": current_user,
+        "active_page": "Applications"
     }
     return render(request, "FERPA_Authorization_form.html", context)
 

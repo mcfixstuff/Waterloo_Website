@@ -34,4 +34,5 @@ urlpatterns = [
 
     # PDF Generation (LaTeX-powered)
     path("application/<int:app_id>/pdf/", views.generate_pdf, name="generate_pdf"),
+
 ]

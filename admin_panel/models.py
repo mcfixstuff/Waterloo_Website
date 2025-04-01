@@ -114,7 +114,8 @@ class FERPAForm(models.Model):
     additional_individuals = models.CharField(max_length=255, blank=True, null=True)
     purposes = models.JSONField(default=list)  # Store selected purposes
     password = models.CharField(max_length=10)  # Phone verification password
-    form_date = models.DateField()
+    form_date = models.DateField(default=timezone.now)
+
     
     # Additional fields for "Other" text inputs
     other_office_text = models.CharField(max_length=255, blank=True, null=True)
