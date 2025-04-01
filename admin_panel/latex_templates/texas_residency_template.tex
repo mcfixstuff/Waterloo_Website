@@ -1,137 +1,78 @@
 \documentclass[12pt]{article}
-\usepackage{graphicx} % Required for inserting images
 \usepackage[a4paper,margin=0.75in]{geometry}
-\usepackage{amssymb} % For checkboxes
+\usepackage{graphicx}
+\usepackage{amssymb}    % for $\square$
 \usepackage{xcolor}
 \usepackage{framed}
-
 \setlength{\parindent}{0pt} % Disable paragraph indentation
 
 \begin{document}
 
 \begin{center}
-{\fontsize{11pt}{13pt} \selectfont \textbf{Residency Reclassification Questionnaire}} \\
-{\fontsize{6pt}{8pt} \selectfont \textbf{This questionnaire is used to determine if a University of Houston student qualifies for resident tuition. The determination of residency classification for tuition purposes is governed by the Texas Education Code, Section 54.052 through 54.064 and rules and regulations promulgated by the Texas Higher Education Coordinating Board. Failure to provide complete and accurate information, supporting documents, and appropriate signatures will delay processing and may result in denial of your application for residency.}}
+    {\Large \textbf{AFFIDAVIT}}\\
+    \textbf{STATE OF TEXAS}\\
+    \small Texas Residency Verification
 \end{center}
 
-\textbf{Part A: Student Basic Information} \\[5pt]
-You may apply for a future term or the current term before the ORD (Official Reporting Date).
-\\
+\vspace{1em}
+
+\noindent \textbf{COUNTY OF} \underline{\textbf{<< county >>}}
+
+\vspace{1em}
+
+Before me, the undersigned Notary Public, on this day personally appeared
+\underline{\textbf{<< appeared_name >>}}, known to me, who being by me duly sworn upon his/her oath, deposed and said:
+
+\vspace{1em}
+
+1. My name is \underline{\textbf{<< full_name >>}}. I am \underline{\textbf{<< age >>}} years of age and have personal knowledge of the facts stated herein and they are all true and correct.
+
+\vspace{1em}
+
+<< graduated_checkbox >> I graduated or will graduate from a Texas high school or received my GED certificate in Texas.
+
+\vspace{0.5em}
+<< resided_checkbox >> I resided in Texas for three years leading up to graduation from high school or receiving my GED certificate.
+
+\vspace{0.5em}
+$\square$ I have resided or will have resided in Texas for the 12 months prior to the census date of the semester in which I will enroll in \underline{\textbf{<< college_name >>}} (name of college).
+
+\vspace{0.5em}
+<< permanent_resident_checkbox >> I have filed or will file an application to become a permanent resident at the earliest opportunity that I am eligible to do so.
+
+\vspace{1em}
+
+In witness whereof, this \underline{\textbf{<< day >>}} day of
+\underline{\textbf{<< month >>}}, \underline{\textbf{<< year >>}}.
+
+\vspace{1em}
+
+Signature: \underline{\textbf{<< signature >>}} \\
+Student ID Number: \underline{\textbf{<< student_id >>}} \\
+Student Date of Birth: \underline{\textbf{<< dob >>}}
+
+\vspace{2em}
+
 \begin{center}
-    \begin{tabular}{c@{\hspace{2cm}}c@{\hspace{2cm}}c}
-        \underline{\textbf{{{{ student_name }}}}} & \underline{\textbf{{{{ dob }}}}} & \underline{\textbf{{{{ age }}}}} \\
-        Name & Date of Birth & Age \\
-        \\ % new line
-        \underline{\textbf{{{{ term }}}}} & \underline{\textbf{{{{ student_id }}}}} \\
-        Term & Student ID Number
-    \end{tabular}
+\fbox{\begin{minipage}{0.9\linewidth}
+    \textbf{NOTARY SECTION}
+
+    \vspace{0.8em}
+    \textbf{SUBSCRIBED TO AND SWORN TO BEFORE ME}, on the
+    \underline{\textbf{<< notary_day >>}} day of \underline{\textbf{<< notary_month >>}}, 
+    \underline{\textbf{<< notary_year >>}}, to certify which witness my hand and official seal.
+
+    \vspace{1em}
+    Notary Name: \underline{\textbf{<< notary_name >>}} \\
+    \textit{Notary Public in and for the State of Texas}
+\end{minipage}}
 \end{center}
 
-\textbf{Part B: Previous Enrollment} \\[5pt]
-1. Did you attend a Texas public institution in the last year? (Yes/No): \underline{\textbf{{{{ attended_texas_college }}}}} \\
-2. Name of last Texas public institution: \underline{\textbf{{{{ last_texas_college }}}}} \\
-3. Terms you were last enrolled:
-\begin{center}
-    \begin{tabular}{c@{\hspace{2cm}}c}
-        \underline{\textbf{{{{ last_fall_term }}}}} & \underline{\textbf{{{{ last_spring_term }}}}} \\
-        Fall, Year & Spring, Year
-    \end{tabular}
-\end{center}
+\vspace{1em}
 
-4. Tuition paid at last institution:
-\begin{itemize}
-    \item $\square$ resident (in-state)
-    \item $\square$ nonresident (out-of-state)
-    \item $\square$ unknown
-\end{itemize}
-
-5. Reason for in-state tuition:
-\begin{itemize}
-    \item $\square$ resident
-    \item $\square$ nonresident with waiver
-    \item $\square$ unknown
-\end{itemize}
-
-\textbf{Part E: Basis of Claim to Residency} \\[5pt]
-1. File taxes as independent taxpayer? (Yes/No): \underline{\textbf{{{{ is_independent_taxpayer }}}}} \\
-2. Claimed as dependent by parent/guardian? (Yes/No): \underline{\textbf{{{{ is_claimed_dependent }}}}}
-
-\textbf{Part F: Additional Questions} \\[5pt]
-1. Are you a U.S. Citizen? (Yes/No): \underline{\textbf{{{{ is_us_citizen }}}}} \\
-5. Do you live in Texas now? (Yes/No): \underline{\textbf{{{{ lives_in_texas }}}}}
-
-6a. How long in Texas?
-\begin{center}
-    \begin{tabular}{c@{\hspace{2cm}}c}
-        \underline{\textbf{{{{ years_in_texas }}}}} & \underline{\textbf{{{{ months_in_texas }}}}} \\
-        Years & Months
-    \end{tabular}
-\end{center}
-
-6b. Main purpose in Texas:
-\begin{itemize}
-    \item $\square$ Go to College
-    \item $\square$ Establish/Maintain a Home
-    \item $\square$ Work Assignment
-\end{itemize}
-
-7a. Military Home of Record Texas? (Yes/No/NA): \underline{\textbf{{{{ is_texas_military_home }}}}} \\
-7b. Military state for tax purposes: \underline{\textbf{{{{ military_tax_state }}}}}
-
-8a. Do you hold property title in Texas?
-\begin{center}
-    \begin{tabular}{c@{\hspace{2cm}}c}
-        \underline{\textbf{{{{ holds_property }}}}} & \underline{\textbf{{{{ property_date }}}}} \\
-        Yes/No & If yes, date acquired
-    \end{tabular}
-\end{center}
-
-8b. Do you manage a business in Texas?
-\begin{center}
-    \begin{tabular}{c@{\hspace{2cm}}c}
-        \underline{\textbf{{{{ has_business }}}}} & \underline{\textbf{{{{ business_date }}}}} \\
-        Yes/No & If yes, date started
-    \end{tabular}
-\end{center}
-
-9a. Gainfully employed in Texas? (Yes/No): \underline{\textbf{{{{ employed_in_texas }}}}} \\
-9b. Primary support from Texas social service? (Yes/No): \underline{\textbf{{{{ receives_social_services }}}}}
-
-10a. Married to Texas resident? (Yes/No): \underline{\textbf{{{{ is_married_to_texan }}}}} \\
-10b. What qualifies your spouse?
-\begin{itemize}
-    \item $\square$ 8a. Hold Title
-    \item $\square$ 8b. Ownership Interest
-    \item $\square$ 9a. Gainful Employment
-    \item $\square$ 9b. Social Services Support
-    \item $\square$ 10a. Texas Resident
-\end{itemize}
-
-10c. How long have you been married?
-\begin{center}
-    \begin{tabular}{c@{\hspace{2cm}}c}
-        \underline{\textbf{{{{ spouse_years }}}}} & \underline{\textbf{{{{ spouse_months }}}}} \\
-        Years & Months
-    \end{tabular}
-\end{center}
-
-\textbf{Part H: Comments} \\[5pt]
-\begin{minipage}{1.0\textwidth}
-\begin{framed}
-{{ comments }}
-\end{framed}
-\end{minipage}
-
-\textbf{File Attachments} \\[5pt]
-Please attach at least two supporting documents:
-\begin{itemize}
-    \item Apartment lease or mortgage (current and 12 months prior)
-    \item Texas driver's license (must be 12+ months old)
-    \item Motor vehicle registration (12+ months)
-    \item Voter registration card (12+ months)
-    \item Utility bills (current and 12 months old)
-    \item Credit report with address history
-    \item TX High School Transcript (for non-resident students)
-\end{itemize}
+\textit{Please Retain a Copy for your Records}\\
+\textit{Submit to Registrar's Office}\\
+Texas Residency Affidavit Form\\
+Page 1 of 1
 
 \end{document}

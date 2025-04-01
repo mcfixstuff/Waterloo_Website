@@ -724,7 +724,197 @@ def preview_application(request, app_id):
 
 
 def generate_pdf(request, app_id):
+    import tempfile
+    import subprocess
+    import os
+    from django.http import HttpResponse, FileResponse
+    from django.shortcuts import get_object_or_404
+    from django.conf import settings
+    from django.template.defaultfilters import date as date_filter
     from .models import Application, FERPAForm, TexasResidencyAffidavit
+
+    application = get_object_or_404(Application, id=app_id)
+
+    # Choose template and context
+    if application.type == 'ferpa':
+        form = getattr(application, 'ferpa_form', None)
+        if not form:
+            return HttpResponse("FERPA form not found", status=404)
+        template_filename = 'ferpa_template.tex'
+        context = {
+            'student_name': form.student_name,
+            'university_division': form.university_division,
+            'peoplesoft_id': form.peoplesoft_id,
+            'offices': ', '.join(form.offices),
+            'info_categories': ', '.join(form.info_categories),
+            'release_to': form.release_to,
+            'additional_individuals': form.additional_individuals or '',
+            'purposes': ', '.join(form.purposes),
+            'password': form.password,
+            'form_date': date_filter(form.form_date, "F d, Y"),
+            'signature': application.user.username,
+        }
+
+    elif application.type == 'texas_residency':
+        form = getattr(application, 'texas_residency_affidavit', None)
+        if not form:
+            return HttpResponse("Texas residency form not found", status=404)
+        template_filename = 'texas_residency_template.tex'
+        context = {
+            'county': form.county_name,
+            'appeared_name': form.appeared_name,
+            'full_name': form.full_name,
+            'age': form.age,
+            'college_name': form.college_name,
+            'day': form.day_of_month,
+            'month': form.month,
+            'year': form.year,
+            'signature': application.user.username,
+            'student_id': form.student_id,
+            'dob': date_filter(form.student_dob, "F d, Y"),
+            'notary_day': form.notary_day or '',
+            'notary_month': form.notary_month or '',
+            'notary_year': form.notary_year or '',
+            'notary_name': form.notary_name or '',
+            'graduated_check': '☒' if form.graduated_check else '☐',
+            'resided_check': '☒' if form.resided_check else '☐',
+            'permanent_resident_check': '☒' if form.permanent_resident_check else '☐',
+        }
+    else:
+        return HttpResponse("Unsupported form type", status=400)
+
+    # Load the LaTeX template
+    tex_path = os.path.join(settings.LATEX_TEMPLATE_DIR, template_filename)
+    if not os.path.exists(tex_path):
+        return HttpResponse(f"LaTeX template not found: {template_filename}", status=404)
+
+    with open(tex_path, "r", encoding="utf-8") as f:
+        tex_template = f.read()
+
+    # Fill in placeholders like <<key>>
+    for key, value in context.items():
+        tex_template = tex_template.replace(f"<<{key}>>", str(value))
+
+    # DEBUG
+    print("====== LaTeX Source ======")
+    print(tex_template)
+    print("==========================")
+
+    # Compile LaTeX
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tex_file = os.path.join(tmpdir, "form.tex")
+        with open(tex_file, "w", encoding="utf-8") as f:
+            f.write(tex_template)
+
+        try:
+            subprocess.run(
+                ["pdflatex", "-interaction=nonstopmode", "form.tex"],
+                cwd=tmpdir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True
+            )
+        except subprocess.CalledProcessError as e:
+            return HttpResponse(f"LaTeX compile error: {e}", status=500)
+
+        pdf_path = os.path.join(tmpdir, "form.pdf")
+        return FileResponse(open(pdf_path, "rb"), content_type="application/pdf")
+
+    import tempfile
+    import subprocess
+    import os
+    from django.http import HttpResponse, FileResponse
+    from django.shortcuts import get_object_or_404
+    from django.conf import settings
+    from django.template.defaultfilters import date as date_filter
+    from .models import Application, FERPAForm, TexasResidencyAffidavit
+
+    application = get_object_or_404(Application, id=app_id)
+
+    if application.type == 'ferpa':
+        form = getattr(application, 'ferpa_form', None)
+        if not form:
+            return HttpResponse("FERPA form not found", status=404)
+        template_filename = 'ferpa_template.tex'
+        context = {
+            'student_name': form.student_name,
+            'university_division': form.university_division,
+            'peoplesoft_id': form.peoplesoft_id,
+            'offices': ', '.join(form.offices),
+            'info_categories': ', '.join(form.info_categories),
+            'release_to': form.release_to,
+            'additional_individuals': form.additional_individuals or '',
+            'purposes': ', '.join(form.purposes),
+            'password': form.password,
+            'form_date': date_filter(form.form_date, "F d, Y"),
+            'signature': application.user.username,
+        }
+
+    elif application.type == 'texas_residency':
+        form = getattr(application, 'texas_residency_affidavit', None)
+        if not form:
+            return HttpResponse("Texas residency form not found", status=404)
+        template_filename = 'texas_residency_template.tex'
+        context = {
+            'county': form.county_name,
+            'appeared_name': form.appeared_name,
+            'full_name': form.full_name,
+            'age': form.age,
+            'college_name': form.college_name,
+            'day': form.day_of_month,
+            'month': form.month,
+            'year': form.year,
+            'signature': application.user.username,
+            'student_id': form.student_id,
+            'dob': date_filter(form.student_dob, "F d, Y"),
+            'notary_day': form.notary_day or '',
+            'notary_month': form.notary_month or '',
+            'notary_year': form.notary_year or '',
+            'notary_name': form.notary_name or '',
+            'graduated_check': form.graduated_check,
+            'resided_check': form.resided_check,
+            'permanent_resident_check': form.permanent_resident_check,
+        }
+    else:
+        return HttpResponse("Unsupported form type", status=400)
+
+    tex_path = os.path.join(settings.LATEX_TEMPLATE_DIR, template_filename)
+    with open(tex_path, "r", encoding="utf-8") as f:
+        tex_template = f.read()
+
+    # Replace all placeholders like <<key>> with actual values
+    for key, value in context.items():
+        tex_template = tex_template.replace(f"<<{key}>>", str(value))
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tex_file_path = os.path.join(tmpdir, "form.tex")
+        with open(tex_file_path, "w", encoding="utf-8") as f:
+            f.write(tex_template)
+
+        try:
+            subprocess.run(
+                ["pdflatex", "-interaction=nonstopmode", "form.tex"],
+                cwd=tmpdir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True
+            )
+        except subprocess.CalledProcessError as e:
+            return HttpResponse(f"LaTeX compile error: {e}", status=500)
+
+        pdf_path = os.path.join(tmpdir, "form.pdf")
+        return FileResponse(open(pdf_path, "rb"), content_type="application/pdf")
+
+    import os
+    import subprocess
+    import tempfile
+    from django.http import FileResponse, HttpResponse
+    from django.template.loader import render_to_string
+    from django.shortcuts import get_object_or_404
+    from django.conf import settings
+    from django.template.defaultfilters import date as date_filter
+    from .models import Application, FERPAForm, TexasResidencyAffidavit
+
     application = get_object_or_404(Application, id=app_id)
 
     # Choose template and context
@@ -779,14 +969,15 @@ def generate_pdf(request, app_id):
     tex_path = os.path.join(settings.LATEX_TEMPLATE_DIR, template_filename)
     with open(tex_path, "r", encoding="utf-8") as f:
         tex_template = f.read()
-        
-    print("====== LaTeX Source ======")
-    print(rendered_tex)
-    print("==========================")
 
     # Fill in placeholders
     for key, value in context.items():
         tex_template = tex_template.replace(f"{{{{ {key} }}}}", str(value))
+
+    # DEBUG print the rendered .tex to terminal
+    print("====== LaTeX Source ======")
+    print(tex_template)
+    print("==========================")
 
     # Compile LaTeX
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -796,7 +987,7 @@ def generate_pdf(request, app_id):
 
         try:
             subprocess.run(
-                ["pdflatex", "-interaction=nonstopmode", tex_file],
+                ["pdflatex", "-interaction=nonstopmode", "form.tex"],
                 cwd=tmpdir,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
