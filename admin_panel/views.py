@@ -492,15 +492,15 @@ def generate_pdf(request, app_id):
     from django.shortcuts import get_object_or_404
     from admin_panel.models import Application
 
-    # Retrieve the application
+    # Retrieve the application by its ID.
     application = get_object_or_404(Application, id=app_id)
 
-    # Here we assume the application is for a FERPA form.
+    # Branch based on the application type.
     if application.type == 'ferpa':
         ferpa_form = getattr(application, 'ferpa_form', None)
         if not ferpa_form:
             return HttpResponse("FERPA form not found", status=404)
-        # Format each list field so that every entry is preceded by "\item "
+        # Format list fields so that each item is preceded by \item.
         offices = "\n".join([f"\\item {office}" for office in ferpa_form.offices])
         info_categories = "\n".join([f"\\item {cat}" for cat in ferpa_form.info_categories])
         purposes = "\n".join([f"\\item {purpose}" for purpose in ferpa_form.purposes])
@@ -515,23 +515,57 @@ def generate_pdf(request, app_id):
             'purposes': purposes,
             'password': ferpa_form.password,
             'form_date': date_filter(ferpa_form.form_date, "F d, Y"),
+            # Use the signature image if available.
             'signature_path': 'signature.png' if application.user.signature_image else 'no_signature.png',
         }
+        template_filename = 'ferpa_template.tex'
+    elif application.type == 'texas_residency':
+        texas_form = getattr(application, 'texas_residency_affidavit', None)
+        if not texas_form:
+            return HttpResponse("Texas residency form not found", status=404)
+        # Prepare checkbox representations.
+        graduated_checkbox = "$\\boxtimes$" if texas_form.graduated_check else "$\\square$"
+        resided_checkbox = "$\\boxtimes$" if texas_form.resided_check else "$\\square$"
+        permanent_resident_checkbox = "$\\boxtimes$" if texas_form.permanent_resident_check else "$\\square$"
+        context = {
+            'county': texas_form.county_name,
+            'appeared_name': texas_form.appeared_name,
+            'full_name': texas_form.full_name,
+            'age': texas_form.age,
+            'graduated_checkbox': graduated_checkbox,
+            'resided_checkbox': resided_checkbox,
+            'permanent_resident_checkbox': permanent_resident_checkbox,
+            'college_name': texas_form.college_name,
+            'day': texas_form.day_of_month,
+            'month': texas_form.month,
+            'year': texas_form.year,
+            # For Texas affidavit, we use the user's username as signature text.
+            'signature': application.user.username,
+            'student_id': texas_form.student_id,
+            'dob': date_filter(texas_form.student_dob, "F d, Y"),
+            'notary_day': texas_form.notary_day if texas_form.notary_day is not None else "",
+            'notary_month': texas_form.notary_month if texas_form.notary_month else "",
+            'notary_year': texas_form.notary_year if texas_form.notary_year is not None else "",
+            'notary_name': texas_form.notary_name if texas_form.notary_name else "",
+        }
+        template_filename = 'texas_residency_template.tex'
     else:
         return HttpResponse("Unsupported form type", status=400)
 
-    template_filename = 'ferpa_template.tex'
-    tex_path = os.path.join(settings.LATEX_TEMPLATE_DIR, template_filename)
-    if not os.path.exists(tex_path):
+    # Get the LaTeX template file.
+    tex_template_path = os.path.join(settings.LATEX_TEMPLATE_DIR, template_filename)
+    if not os.path.exists(tex_template_path):
         return HttpResponse("Template not found", status=404)
 
     # Read the LaTeX template.
-    with open(tex_path, "r", encoding="utf-8") as f:
+    with open(tex_template_path, "r", encoding="utf-8") as f:
         tex_template = f.read()
 
-    # Replace all placeholders like <<key>> with their corresponding values.
+    # Replace all placeholders in the template.
+    # We handle both formats: <<key>> and << key >>.
     for key, value in context.items():
         tex_template = tex_template.replace(f"<<{key}>>", str(value))
+        tex_template = tex_template.replace(f"<< {key} >>", str(value))
 
     with tempfile.TemporaryDirectory() as tmpdir:
         # Write the rendered LaTeX source to a file.
@@ -539,12 +573,9 @@ def generate_pdf(request, app_id):
         with open(tex_file_path, "w", encoding="utf-8") as f:
             f.write(tex_template)
 
-        # Handle the signature image.
-        if context['signature_path']:
-            if context['signature_path'] == 'signature.png':
-                src = application.user.signature_image.path
-            else:
-                src = os.path.join(settings.LATEX_TEMPLATE_DIR, context['signature_path'])
+        # If the FERPA form is being processed and a signature image exists, copy it.
+        if application.type == 'ferpa' and context.get('signature_path') == 'signature.png':
+            src = application.user.signature_image.path
             dest = os.path.join(tmpdir, "signature.png")
             if os.path.exists(src):
                 from shutil import copyfile
