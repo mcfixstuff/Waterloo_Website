@@ -11,16 +11,22 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install additional dependencies for image processing
+# Install system-level dependencies including LaTeX (pdflatex)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev gcc python3-dev \
     libjpeg-dev zlib1g-dev libfreetype6-dev \
+    texlive-latex-base \
+    texlive-latex-recommended \
+    texlive-latex-extra \
+    texlive-fonts-recommended \
+    texlive-xetex \
+    lmodern \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project
 COPY . .
 
-# Create media directory for user uploads
+# Create media and static directories
 RUN mkdir -p /app/media/signatures
 RUN mkdir -p /app/static
 RUN chmod -R 755 /app/media

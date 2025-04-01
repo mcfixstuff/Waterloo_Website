@@ -8,12 +8,12 @@ import msal
 from django.db.models import Q
 import requests
 from .forms import UserSignatureForm,FERPAForm,TexasResidencyAffidavit,Application
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 import os
 from django.contrib import messages
-
-
+import tempfile
+import subprocess
+from django.http import FileResponse
+from django.template.defaultfilters import date as date_filter
 
 # Authentication Views
 def show_login_page(request):
@@ -724,139 +724,89 @@ def preview_application(request, app_id):
 
 
 def generate_pdf(request, app_id):
-    """Generate and return a PDF of an application form."""
-    
-    # Get the application
+    from .models import Application, FERPAForm, TexasResidencyAffidavit
     application = get_object_or_404(Application, id=app_id)
-    
-    # Determine which form to use based on application type
+
+    # Choose template and context
     if application.type == 'ferpa':
-        try:
-            form = application.ferpa_form
-        except FERPAForm.DoesNotExist:
-            return HttpResponse("FERPA form data not found for this application.", status=404)
-        
-        # Create a response with PDF content type
-        response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="ferpa_authorization_{app_id}.pdf"'
-
-        # Create PDF object
-        p = canvas.Canvas(response, pagesize=letter)
-        width, height = letter
-
-        # Set font
-        p.setFont("Helvetica", 12)
-
-        # Title
-        p.drawString(100, height - 50, "FERPA Authorization Form")
-        p.drawString(100, height - 70, "Family Educational Rights and Privacy Act (FERPA)")
-        p.line(100, height - 80, 500, height - 80)
-
-        # Add content dynamically
-        p.drawString(100, height - 100, f"Student Name: {form.student_name}")
-        p.drawString(100, height - 120, f"University Division: {form.university_division}")
-        p.drawString(100, height - 140, f"PeopleSoft ID: {form.peoplesoft_id}")
-
-        p.drawString(100, height - 160, f"Selected Offices: {', '.join(form.offices)}")
-        p.drawString(100, height - 180, f"Information Categories: {', '.join(form.info_categories)}")
-
-        p.drawString(100, height - 200, f"Released To: {form.release_to}")
-        p.drawString(100, height - 220, f"Additional Individuals: {form.additional_individuals or 'None'}")
-
-        p.drawString(100, height - 240, f"Purpose: {', '.join(form.purposes)}")
-        p.drawString(100, height - 260, f"Password for Phone Verification: {form.password}")
-
-        # Date
-        p.drawString(100, height - 280, f"Date: {form.form_date}")
-
-        # Signature Section
-        p.drawString(100, height - 320, "Student Signature:")
-
-        # Check if the user has a signature image
-        if application.user.signature_image:
-            signature_path = application.user.signature_image.path
-            if os.path.exists(signature_path):
-                p.drawImage(signature_path, 100, height - 380, width=150, height=50)
-            else:
-                p.drawString(100, height - 360, "Signature not found.")
-        else:
-            p.drawString(100, height - 360, "No signature on file.")
+        form = getattr(application, 'ferpa_form', None)
+        if not form:
+            return HttpResponse("FERPA form not found", status=404)
+        template_filename = 'ferpa_template.tex'
+        context = {
+            'student_name': form.student_name,
+            'university_division': form.university_division,
+            'peoplesoft_id': form.peoplesoft_id,
+            'offices': ', '.join(form.offices),
+            'info_categories': ', '.join(form.info_categories),
+            'release_to': form.release_to,
+            'additional_individuals': form.additional_individuals or '',
+            'purposes': ', '.join(form.purposes),
+            'password': form.password,
+            'form_date': date_filter(form.form_date, "F d, Y"),
+            'signature': application.user.username,
+        }
 
     elif application.type == 'texas_residency':
-        try:
-            form = application.texas_residency_affidavit
-        except TexasResidencyAffidavit.DoesNotExist:
-            return HttpResponse("Texas Residency Affidavit data not found for this application.", status=404)
-        
-        # Create a response with PDF content type
-        response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="texas_residency_{app_id}.pdf"'
-
-        # Create PDF object
-        p = canvas.Canvas(response, pagesize=letter)
-        width, height = letter
-
-        # Set font
-        p.setFont("Helvetica", 12)
-
-        # Title
-        p.drawString(100, height - 50, "AFFIDAVIT")
-        p.drawString(100, height - 70, "STATE OF TEXAS")
-        p.drawString(100, height - 90, "Texas Residency Verification")
-        p.line(100, height - 100, 500, height - 100)
-
-        # County and Appearance
-        p.drawString(100, height - 120, f"COUNTY OF: {form.county_name}")
-        p.drawString(100, height - 140, "Before me, the undersigned Notary Public, on this day personally appeared")
-        p.drawString(100, height - 160, f"{form.appeared_name}")
-        p.drawString(100, height - 180, "known to me, who being by me duly sworn upon his/her oath, deposed and said:")
-
-        # Personal information
-        p.drawString(100, height - 200, f"1. My name is {form.full_name}")
-        p.drawString(100, height - 220, f"   I am {form.age} years of age and have personal knowledge of the facts stated herein.")
-
-        # Checkboxes
-        p.drawString(100, height - 240, f"2. {'[X]' if form.graduated_check else '[ ]'} I graduated or will graduate from a Texas high school or received my GED in TX.")
-        p.drawString(100, height - 260, f"3. {'[X]' if form.resided_check else '[ ]'} I resided in Texas for three years leading up to graduation/GED.")
-        p.drawString(100, height - 280, f"4. I have resided or will have resided in Texas for 12 months prior to enrollment in {form.college_name}")
-        p.drawString(100, height - 300, f"5. {'[X]' if form.permanent_resident_check else '[ ]'} I will file for permanent residency when eligible.")
-
-        # Date
-        p.drawString(100, height - 320, f"In witness whereof, this {form.day_of_month} day of {form.month}, {form.year}.")
-
-        # Signature Section
-        p.drawString(100, height - 350, "Signature:")
-
-        # Check if the user has a signature image
-        if application.user.signature_image:
-            signature_path = application.user.signature_image.path
-            if os.path.exists(signature_path):
-                p.drawImage(signature_path, 100, height - 400, width=150, height=50)
-            else:
-                p.drawString(100, height - 370, "Signature not found.")
-        else:
-            p.drawString(100, height - 370, "No signature on file.")
-
-        p.drawString(100, height - 430, f"Student ID: {form.student_id}")
-        p.drawString(100, height - 450, f"Date of Birth: {form.student_dob.strftime('%m/%d/%Y')}")
-
-        # Notary section
-        if form.notary_day and form.notary_month and form.notary_year:
-            p.drawString(100, height - 480, f"SWORN TO BEFORE ME on {form.notary_day} {form.notary_month}, {form.notary_year}")
-            if form.notary_name:
-                p.drawString(100, height - 500, f"Notary: {form.notary_name}")
+        form = getattr(application, 'texas_residency_affidavit', None)
+        if not form:
+            return HttpResponse("Texas residency form not found", status=404)
+        template_filename = 'texas_residency_affidavit_template.tex'
+        context = {
+            'county': form.county_name,
+            'appeared_name': form.appeared_name,
+            'full_name': form.full_name,
+            'age': form.age,
+            'college_name': form.college_name,
+            'day': form.day_of_month,
+            'month': form.month,
+            'year': form.year,
+            'signature': application.user.username,
+            'student_id': form.student_id,
+            'dob': date_filter(form.student_dob, "F d, Y"),
+            'notary_day': form.notary_day or '',
+            'notary_month': form.notary_month or '',
+            'notary_year': form.notary_year or '',
+            'notary_name': form.notary_name or '',
+            'graduated_check': form.graduated_check,
+            'resided_check': form.resided_check,
+            'permanent_resident_check': form.permanent_resident_check,
+        }
     else:
-        return HttpResponse("Unknown application type or not supported for PDF generation.", status=400)
+        return HttpResponse("Unsupported form type", status=400)
 
-    # Footer
-    p.drawString(100, height - 520, "This is a digital document generated from the application system.")
+    # Load LaTeX template
+    tex_path = os.path.join(settings.LATEX_TEMPLATE_DIR, template_filename)
+    with open(tex_path, "r", encoding="utf-8") as f:
+        tex_template = f.read()
+        
+    print("====== LaTeX Source ======")
+    print(rendered_tex)
+    print("==========================")
 
-    # Save PDF
-    p.showPage()
-    p.save()
+    # Fill in placeholders
+    for key, value in context.items():
+        tex_template = tex_template.replace(f"{{{{ {key} }}}}", str(value))
 
-    return response
+    # Compile LaTeX
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tex_file = os.path.join(tmpdir, "form.tex")
+        with open(tex_file, "w", encoding="utf-8") as f:
+            f.write(tex_template)
 
+        try:
+            subprocess.run(
+                ["pdflatex", "-interaction=nonstopmode", tex_file],
+                cwd=tmpdir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True
+            )
+        except subprocess.CalledProcessError as e:
+            return HttpResponse(f"LaTeX compile error: {e}", status=500)
+
+        pdf_path = os.path.join(tmpdir, "form.pdf")
+        return FileResponse(open(pdf_path, "rb"), content_type="application/pdf")
 
 def approve_form(request, app_id):
     """Approve an application if the user is manager or superuser."""

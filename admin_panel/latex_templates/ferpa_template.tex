@@ -20,52 +20,67 @@
 
 \vspace{1em}
 
-\noindent \textbf{COUNTY OF} \underline{\hspace{5cm}}
+\noindent \textbf{COUNTY OF} \underline{\textbf{{{{ county }}}}}
 
 \vspace{1em}
 
 Before me, the undersigned Notary Public, on this day personally appeared
-\underline{\hspace{7cm}}, known to me, who being by me duly sworn upon his/her oath, deposed and said:
+\underline{\textbf{{{{ appeared_name }}}}}, known to me, who being by me duly sworn upon his/her oath, deposed and said:
 
 \vspace{1em}
 
 % --------------------------------------------------------------
 % Personal Info
 % --------------------------------------------------------------
-1. My name is \underline{\hspace{7cm}}. I am \underline{\hspace{2cm}} years of age and have personal knowledge of the facts stated herein and they are all true and correct.
+1. My name is \underline{\textbf{{{{ full_name }}}}}. I am \underline{\textbf{{{{ age }}}}} years of age and have personal knowledge of the facts stated herein and they are all true and correct.
 
 \vspace{1em}
 
 % --------------------------------------------------------------
 % Checkboxes
 % --------------------------------------------------------------
-$\square$ I graduated or will graduate from a Texas high school or received my GED certificate in Texas.
+{{ '% if graduated_check %' }}
+$\boxtimes$
+{{ '% else %' }}
+$\square$
+{{ '% endif %' }}
+I graduated or will graduate from a Texas high school or received my GED certificate in Texas.
 
 \vspace{0.5em}
-$\square$ I resided in Texas for three years leading up to graduation from high school or receiving my GED certificate.
+{{ '% if resided_check %' }}
+$\boxtimes$
+{{ '% else %' }}
+$\square$
+{{ '% endif %' }}
+I resided in Texas for three years leading up to graduation from high school or receiving my GED certificate.
 
 \vspace{0.5em}
-$\square$ I have resided or will have resided in Texas for the 12 months prior to the census date of the semester in which I will enroll in \underline{\hspace{7cm}} (name of college).
+$\square$ I have resided or will have resided in Texas for the 12 months prior to the census date of the semester in which I will enroll in \underline{\textbf{{{{ college_name }}}}} (name of college).
 
 \vspace{0.5em}
-$\square$ I have filed or will file an application to become a permanent resident at the earliest opportunity that I am eligible to do so.
+{{ '% if permanent_resident_check %' }}
+$\boxtimes$
+{{ '% else %' }}
+$\square$
+{{ '% endif %' }}
+I have filed or will file an application to become a permanent resident at the earliest opportunity that I am eligible to do so.
 
 \vspace{1em}
 
 % --------------------------------------------------------------
 % Date Section
 % --------------------------------------------------------------
-In witness whereof, this \underline{\hspace{1cm}} day of
-\underline{\hspace{2.5cm}}, \underline{\hspace{2cm}}.
+In witness whereof, this \underline{\textbf{{{{ day }}}}} day of
+\underline{\textbf{{{{ month }}}}}, \underline{\textbf{{{{ year }}}}}.
 
 \vspace{1em}
 
 % --------------------------------------------------------------
 % Signature / ID / DOB
 % --------------------------------------------------------------
-Signature: \underline{\hspace{7cm}} \\
-Student ID Number: \underline{\hspace{7cm}} \\
-Student Date of Birth: \underline{\hspace{7cm}}
+Signature: \underline{\textbf{{{{ signature }}}}} \\
+Student ID Number: \underline{\textbf{{{{ student_id }}}}} \\
+Student Date of Birth: \underline{\textbf{{{{ dob }}}}}
 
 \vspace{2em}
 
@@ -78,11 +93,11 @@ Student Date of Birth: \underline{\hspace{7cm}}
 
     \vspace{0.8em}
     \textbf{SUBSCRIBED TO AND SWORN TO BEFORE ME}, on the
-    \underline{\hspace{1cm}} day of \underline{\hspace{2.5cm}}, 
-    \underline{\hspace{2cm}}, to certify which witness my hand and official seal.
+    \underline{\textbf{{{{ notary_day }}}}} day of \underline{\textbf{{{{ notary_month }}}}}, 
+    \underline{\textbf{{{{ notary_year }}}}}, to certify which witness my hand and official seal.
 
     \vspace{1em}
-    Notary Name: \underline{\hspace{7cm}} \\
+    Notary Name: \underline{\textbf{{{{ notary_name }}}}} \\
     \textit{Notary Public in and for the State of Texas}
 \end{minipage}}
 \end{center}

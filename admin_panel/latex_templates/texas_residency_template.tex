@@ -2,9 +2,7 @@
 \usepackage{graphicx} % Required for inserting images
 \usepackage[a4paper,margin=0.75in]{geometry}
 \usepackage{amssymb} % For checkboxes
-% \usepackage{array} 
 \usepackage{xcolor}
-% \usepackage{setspace}
 \usepackage{framed}
 
 \setlength{\parindent}{0pt} % Disable paragraph indentation
@@ -21,160 +19,119 @@ You may apply for a future term or the current term before the ORD (Official Rep
 \\
 \begin{center}
     \begin{tabular}{c@{\hspace{2cm}}c@{\hspace{2cm}}c}
-        \rule{4cm}{0.4pt} & \rule{5cm}{0.4pt} & \rule{3cm}{0.4pt} \\ 
-        Name & Date of Birth & Age
-        \\ \\ %new line 
-        \rule{4cm}{0.4pt} & \rule{5cm}{0.4pt} \\
+        \underline{\textbf{{{{ student_name }}}}} & \underline{\textbf{{{{ dob }}}}} & \underline{\textbf{{{{ age }}}}} \\
+        Name & Date of Birth & Age \\
+        \\ % new line
+        \underline{\textbf{{{{ term }}}}} & \underline{\textbf{{{{ student_id }}}}} \\
         Term & Student ID Number
     \end{tabular}
 \end{center}
 
 \textbf{Part B: Previous Enrollment} \\[5pt]
-1. During the 12 months prior to the term for which you are applying, did you attend a public college or university in Texas in a fall or spring term? (Yes/No) \underline{\hspace{5cm}}
-\\ \\
-2. If yes, what Texas public institution did you last attend? (Give full name, not just initials) \underline{\hspace{9cm}}
-\\ \\
-3. In which terms were you last enrolled? (Indicate all that apply)
-\\ \\
-\begin{left}
-    \begin{tabular}{c@{\hspace{2cm}}c@{\hspace{2cm}}c}
-    \rule{4cm}{0.4pt} & \rule{5cm}{0.4pt} \\
-    Fall, Year & Spring, Year
+1. Did you attend a Texas public institution in the last year? (Yes/No): \underline{\textbf{{{{ attended_texas_college }}}}} \\
+2. Name of last Texas public institution: \underline{\textbf{{{{ last_texas_college }}}}} \\
+3. Terms you were last enrolled:
+\begin{center}
+    \begin{tabular}{c@{\hspace{2cm}}c}
+        \underline{\textbf{{{{ last_fall_term }}}}} & \underline{\textbf{{{{ last_spring_term }}}}} \\
+        Fall, Year & Spring, Year
     \end{tabular}
-\end{left}
-\\ \\
-4. During your last semester at a Texas public institution, did you pay resident (in-state) or nonresident (out-of-state) tuition? Check one.
-\begin{list}{}{\leftmargin=0pt \itemindent=0pt \setlength{\itemsep}{0pt}}
+\end{center}
+
+4. Tuition paid at last institution:
+\begin{itemize}
     \item $\square$ resident (in-state)
     \item $\square$ nonresident (out-of-state)
     \item $\square$ unknown
-\end{list}
+\end{itemize}
 
-5. If you paid in-state tuition at your last institution, was it because you were a Texas resident or because you were a nonresident who received a waiver? Check one.
-\begin{list}{}{\leftmargin=0pt \itemindent=0pt \setlength{\itemsep}{0pt}}
+5. Reason for in-state tuition:
+\begin{itemize}
     \item $\square$ resident
-    \item $\square$ nonresident with a waiver
+    \item $\square$ nonresident with waiver
     \item $\square$ unknown
-\end{list}
+\end{itemize}
 
 \textbf{Part E: Basis of Claim to Residency} \\[5pt]
-1. Do you file your own federal income tax as an independent taxpayer? {\color{red} If yes, submit your 1040 Federal Income Tax transcript.} A Tax Transcript is a summary of the Tax Return.
+1. File taxes as independent taxpayer? (Yes/No): \underline{\textbf{{{{ is_independent_taxpayer }}}}} \\
+2. Claimed as dependent by parent/guardian? (Yes/No): \underline{\textbf{{{{ is_claimed_dependent }}}}}
 
-An independent taxpayer should not be claimed as a dependent for tax purposes by another person. If you file a joint return with your spouse, answer "yes". (Yes/No).
-\vspace{0.6cm}
-\underline{\hspace{3cm}}
-\\
-2. Are you claimed as a dependent or are you eligible to be claimed as a dependent by a parent or court-appointed guardian*? {\color{red} If yes, submit Parent's 1040 Federal Income Tax transcript.} A Tax Transcript is a summary of the Tax Return.
+\textbf{Part F: Additional Questions} \\[5pt]
+1. Are you a U.S. Citizen? (Yes/No): \underline{\textbf{{{{ is_us_citizen }}}}} \\
+5. Do you live in Texas now? (Yes/No): \underline{\textbf{{{{ lives_in_texas }}}}}
 
-To be eligible to be claimed as a dependent, your parent or legal guardian must provide at least one half of your support. A step-parent does not qualify as a parent if he/she has not adopted the student. (Yes/No).
-\vspace{0.6cm}
-\underline{\hspace{3cm}}
-\\
-\textbf{Part F. Questions for students who answered "Yes" to Question 1 or "Self" to Question 3 of Part E} \\[5pt]
-1. Are you a U.S. Citizen? (Yes/No).
-\vspace{0.6cm}
-\underline{\hspace{3cm}}
-\\
-5. Do you currently live in Texas? If you are out of state due to a temporary assignment by your employer or other temporary purpose, please check "no" and explain in Part H. {\color{red} You may be required to submit additional documentation supporting a temporary employment absence.} (Yes/No).
-\vspace{0.6cm}
-\underline{\hspace{3cm}}
-\\
-6a. If you currently live in Texas, how long have you been living here? {\color{red} You may be required to provide a copy of a lease agreement or mortgage agreement.}
+6a. How long in Texas?
 \begin{center}
-    \begin{tabular}{c@{\hspace{2cm}}c@{\hspace{2cm}}c}
-        \rule{4cm}{0.4pt} & \rule{4cm}{0.4pt} \\
+    \begin{tabular}{c@{\hspace{2cm}}c}
+        \underline{\textbf{{{{ years_in_texas }}}}} & \underline{\textbf{{{{ months_in_texas }}}}} \\
         Years & Months
     \end{tabular}
 \end{center}
 
-6b. What is your main purpose for being in Texas?
-
-If reasons other than those listed, give an explanation in Part H.
-\begin{list}{}{\leftmargin=0pt \itemindent=0pt \setlength{\itemsep}{0pt}}
+6b. Main purpose in Texas:
+\begin{itemize}
     \item $\square$ Go to College
     \item $\square$ Establish/Maintain a Home
     \item $\square$ Work Assignment
-\end{list}
+\end{itemize}
 
-7a. If you are a member of U.S. military, is Texas your Home of Record? {\color{red} If Yes, attach copy of DD-214.} (Yes/No/NA).
-\vspace{0.6cm}
-\underline{\hspace{3cm}}
-\\
-7b. What state will have been listed as your military legal residence for State tax purposes on your Leave and Earnings Statement for the 12 months prior to enrollment? (State).
-\vspace{0.6cm}
-\underline{\hspace{3cm}}
-\\
-8a. Do you hold the title (Warranty Deed, Deed of Trust, or other similar instrument that is effective to hold title) to residential real property in Texas for a period of at least a consecutive 12 months? {\color{red}If Yes, attach copy of Hold Title.} 
+7a. Military Home of Record Texas? (Yes/No/NA): \underline{\textbf{{{{ is_texas_military_home }}}}} \\
+7b. Military state for tax purposes: \underline{\textbf{{{{ military_tax_state }}}}}
+
+8a. Do you hold property title in Texas?
 \begin{center}
-    \begin{tabular}{c@{\hspace{2cm}}c@{\hspace{2cm}}c}
-        \rule{4cm}{0.4pt} & \rule{4cm}{0.4pt} \\
-        Yes/No & If yes, date required
+    \begin{tabular}{c@{\hspace{2cm}}c}
+        \underline{\textbf{{{{ holds_property }}}}} & \underline{\textbf{{{{ property_date }}}}} \\
+        Yes/No & If yes, date acquired
     \end{tabular}
 \end{center}
 
-8b. Do you have ownership interest and customarily manage a business in Texas without the intention of liquidation in the foreseeable future for a period of at least a consecutive 12 months? \begin{center}
-    \begin{tabular}{c@{\hspace{2cm}}c@{\hspace{2cm}}c}
-        \rule{4cm}{0.4pt} & \rule{4cm}{0.4pt} \\
-        Yes/No & If yes, date required
+8b. Do you manage a business in Texas?
+\begin{center}
+    \begin{tabular}{c@{\hspace{2cm}}c}
+        \underline{\textbf{{{{ has_business }}}}} & \underline{\textbf{{{{ business_date }}}}} \\
+        Yes/No & If yes, date started
     \end{tabular}
 \end{center}
-9a. While living in Texas, have you been gainfully employed for a period of at least a consecutive 12 months?
 
-Gainful employment requires an average employment of at least 20 hours per week for one year or earnings equal to at least half of tuition and living expense for one 9-month academic year. Employment conditioned on student status such as work-study, the receipt of stipends, fellowships, or research or teaching assistantships does not constitute gainful employment.
+9a. Gainfully employed in Texas? (Yes/No): \underline{\textbf{{{{ employed_in_texas }}}}} \\
+9b. Primary support from Texas social service? (Yes/No): \underline{\textbf{{{{ receives_social_services }}}}}
 
-{\color{red}Students may be required to submit documentation of gainful employment in Texas.}
-\\
-(Yes/No).
-\vspace{0.6cm}
-\underline{\hspace{3cm}}
-\\
-9b. While living in Texas, have you received primary support through services from a social service agency for a period of at least a consecutive 12 months? (Yes/No).
-\vspace{0.6cm}
-\underline{\hspace{3cm}}
-\\
-10a. Are you married to a person who has been classified as a Texas resident by a Texas public institution or could answer "yes" to any part of question 8 or 9? (Yes/No).
-\vspace{0.6cm}
-\underline{\hspace{3cm}}
-\\
-10b. If yes, indicate which question (and which part of the question) could be answered "yes" by your spouse. 
-\begin{list}{}{\leftmargin=0pt \itemindent=0pt \setlength{\itemsep}{0pt}}
+10a. Married to Texas resident? (Yes/No): \underline{\textbf{{{{ is_married_to_texan }}}}} \\
+10b. What qualifies your spouse?
+\begin{itemize}
     \item $\square$ 8a. Hold Title
     \item $\square$ 8b. Ownership Interest
     \item $\square$ 9a. Gainful Employment
     \item $\square$ 9b. Social Services Support
     \item $\square$ 10a. Texas Resident
-\end{list}
+\end{itemize}
 
-10c. How long have you been married to the Texas resident? 
+10c. How long have you been married?
 \begin{center}
-    \begin{tabular}{c@{\hspace{2cm}}c@{\hspace{2cm}}c}
-        \rule{4cm}{0.4pt} & \rule{4cm}{0.4pt} \\
+    \begin{tabular}{c@{\hspace{2cm}}c}
+        \underline{\textbf{{{{ spouse_years }}}}} & \underline{\textbf{{{{ spouse_months }}}}} \\
         Years & Months
     \end{tabular}
 \end{center}
 
-\textbf{Part H. General Comments} \\[5pt]
-Is there any additional information that you believe your college should know in evaluating your eligibility to be classified as a resident? If so, please provide it below: 
-\\ \\
+\textbf{Part H: Comments} \\[5pt]
 \begin{minipage}{1.0\textwidth}
 \begin{framed}
-Comments:
-\vspace{2cm}
+{{ comments }}
 \end{framed}
 \end{minipage}
-\\ \\
-\textbf{File Attachments} \\[5pt]
-A minimum of two of the following supporting documents are required to complete your residency questionnaire:  
-\noindent A minimum of two of the following supporting documents are required to complete your residency questionnaire:
 
+\textbf{File Attachments} \\[5pt]
+Please attach at least two supporting documents:
 \begin{itemize}
-    \item Apartment lease, mortgage voucher, student/parent's name must be on the current lease and one that is 12 months old.
-    \item Texas driver's license, showing a Texas address, student/parent's name must be on the current license and issued at least 12 months prior to the Census Date.
-    \item Texas motor vehicle registration, student/parent's name must be on the current registration and issued at least 12 months prior to the Census Date.
-    \item A current Texas voter registration card, student/parent's name must be on the current registration and issued at least 12 months prior to the Census Date.
-    \item Two utility bills, student/parent's name must be on the current utility bills (one that is 12 months old) showing name and Texas address.
-    \item Credit Report, showing the address length of time.
-    \item TX High School Transcript (only for non-resident students)
+    \item Apartment lease or mortgage (current and 12 months prior)
+    \item Texas driver's license (must be 12+ months old)
+    \item Motor vehicle registration (12+ months)
+    \item Voter registration card (12+ months)
+    \item Utility bills (current and 12 months old)
+    \item Credit report with address history
+    \item TX High School Transcript (for non-resident students)
 \end{itemize}
 
 \end{document}
