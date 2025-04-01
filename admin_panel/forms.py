@@ -366,3 +366,28 @@ class ApplicationReviewForm(forms.ModelForm):
             instance.save()
         
         return instance
+
+# admin_panel/forms.py (UserSignatureForm snippet)
+from django.core.exceptions import ValidationError
+from PIL import Image
+
+def validate_image(image):
+    try:
+        img = Image.open(image)
+        img.verify()  # Check if image is corrupted
+    except Exception:
+        raise ValidationError("Uploaded file is not a valid image.")
+
+class UserSignatureForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['signature_image']
+        widgets = {
+            'signature_image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+        }
+
+    def clean_signature_image(self):
+        image = self.cleaned_data.get("signature_image")
+        if image:
+            validate_image(image)
+        return image
