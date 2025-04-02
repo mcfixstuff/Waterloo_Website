@@ -1,3 +1,4 @@
+# Django imports
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, FileResponse
 from django.conf import settings
@@ -7,9 +8,11 @@ from django.template.defaultfilters import date as date_filter
 from django.contrib import messages
 from django.db.models import Q
 
+# App-specific imports
 from admin_panel.models import User, Application, FERPAForm, TexasResidencyAffidavit
 from .forms import UserSignatureForm
 
+# Third-party imports
 import requests
 import tempfile
 import subprocess
@@ -483,14 +486,7 @@ def preview_application(request, app_id):
     return render(request, template_name, context)
 
 def generate_pdf(request, app_id):
-    import os
-    import tempfile
-    import subprocess
-    from django.conf import settings
-    from django.http import FileResponse, HttpResponse
-    from django.template.defaultfilters import date as date_filter
-    from django.shortcuts import get_object_or_404
-    from admin_panel.models import Application
+
 
     # Retrieve the application by its ID.
     application = get_object_or_404(Application, id=app_id)
