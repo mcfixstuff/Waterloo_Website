@@ -82,6 +82,3 @@ venv.bak/
 # Docker
 Dockerfile.local
 docker-compose.local.yml
-
-# Static files collected
-/static/
