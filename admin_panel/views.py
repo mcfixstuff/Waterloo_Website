@@ -515,7 +515,7 @@ def generate_pdf(request, app_id):
             'purposes': purposes,
             'password': ferpa_form.password,
             'form_date': date_filter(ferpa_form.form_date, "F d, Y"),
-            # Use the signature image if available.
+            # For FERPA, use the signature image if available.
             'signature_path': 'signature.png' if application.user.signature_image else 'no_signature.png',
         }
         template_filename = 'ferpa_template.tex'
@@ -539,8 +539,6 @@ def generate_pdf(request, app_id):
             'day': texas_form.day_of_month,
             'month': texas_form.month,
             'year': texas_form.year,
-            # For Texas affidavit, we use the user's username as signature text.
-            'signature': application.user.username,
             'student_id': texas_form.student_id,
             'dob': date_filter(texas_form.student_dob, "F d, Y"),
             'notary_day': texas_form.notary_day if texas_form.notary_day is not None else "",
@@ -548,6 +546,11 @@ def generate_pdf(request, app_id):
             'notary_year': texas_form.notary_year if texas_form.notary_year is not None else "",
             'notary_name': texas_form.notary_name if texas_form.notary_name else "",
         }
+        # Instead of printing the user's name, use their signature photo if available.
+        if application.user.signature_image:
+            context['signature_path'] = 'signature.png'
+        else:
+            context['signature_path'] = 'no_signature.png'
         template_filename = 'texas_residency_template.tex'
     else:
         return HttpResponse("Unsupported form type", status=400)
@@ -562,7 +565,7 @@ def generate_pdf(request, app_id):
         tex_template = f.read()
 
     # Replace all placeholders in the template.
-    # We handle both formats: <<key>> and << key >>.
+    # We handle both <<key>> and << key >> forms.
     for key, value in context.items():
         tex_template = tex_template.replace(f"<<{key}>>", str(value))
         tex_template = tex_template.replace(f"<< {key} >>", str(value))
@@ -573,8 +576,8 @@ def generate_pdf(request, app_id):
         with open(tex_file_path, "w", encoding="utf-8") as f:
             f.write(tex_template)
 
-        # If the FERPA form is being processed and a signature image exists, copy it.
-        if application.type == 'ferpa' and context.get('signature_path') == 'signature.png':
+        # For both form types, if a signature image is to be used, copy it into tmpdir.
+        if context.get('signature_path') == 'signature.png':
             src = application.user.signature_image.path
             dest = os.path.join(tmpdir, "signature.png")
             if os.path.exists(src):
