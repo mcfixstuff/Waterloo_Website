@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./media:/app/media
+      - static_volume:/app/static
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - MICROSOFT_CLIENT_ID=${MICROSOFT_CLIENT_ID}
+      - MICROSOFT_TENANT_ID=${MICROSOFT_TENANT_ID}
+      - MICROSOFT_CLIENT_SECRET=${MICROSOFT_CLIENT_SECRET}
+      - REDIRECT_URI=${REDIRECT_URI}
+      - SQLITE_DB_NAME=${SQLITE_DB_NAME}
+      - TIME_ZONE=${TIME_ZONE}
+      - STATIC_ROOT=${STATIC_ROOT}
+
+volumes:
+  static_volume:
