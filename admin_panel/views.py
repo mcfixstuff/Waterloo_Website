@@ -7,7 +7,7 @@ from admin_panel.models import User
 import msal
 from django.db.models import Q
 import requests
-from .forms import UserSignatureForm,FERPAForm,TexasResidencyAffidavit,Application
+from .forms import UserSignatureForm,FERPAForm,TexasResidencyAffidavit, TexasResidencyForm, Application
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
@@ -278,11 +278,12 @@ def select_form_type(request):
         form_type = request.POST.get('form_type')
         
         # Store the form type selection in session instead of creating an application
-        if form_type in ['ferpa_authorization', 'texas_affidavit']:
+        if form_type in ['ferpa_authorization', 'texas_affidavit', 'texas_questionnaire']:
             # Map the form type to application_type
             application_type = {
                 'ferpa_authorization': 'ferpa',
-                'texas_affidavit': 'texas_residency'
+                'texas_affidavit': 'texas_residency',
+                'texas_questionnaire': 'texas_questionnaire'
             }.get(form_type)
             
             # Store the selected type in session for later use when form is actually saved
@@ -290,17 +291,26 @@ def select_form_type(request):
                 
             # Render the appropriate form template without creating an application yet
             if form_type == 'ferpa_authorization':
+                print("DEBUG: Loading Ferpa form", form_type)
                 context = {
                     'user': user,
                     'active_page': 'Applications'
                 }
                 return render(request, 'FERPA_Authorization_form.html', context)
             elif form_type == 'texas_affidavit':
+                print("DEBUG: Loading Texas affad form", form_type)
                 context = {
                     'user': user,
                     'active_page': 'Applications'
                 }
                 return render(request, 'Texas_Residency_Affidavit_Form.html', context)
+            elif form_type == 'texas_questionnaire':  
+                print("DEBUG: Loading Texas Questionnaire form")
+                context = {
+                    'user': user,
+                    'active_page': 'Applications'
+                }
+                return render(request, 'Texas_Residency_Questionnaire_Form.html', context)
             elif form_type == 'leave_absence':
                 return HttpResponse('leave_absence_form')
         else:
@@ -681,6 +691,137 @@ def save_texas_affidavit_form(request):
     
     # If not POST, just redirect to Applications
     return redirect('Applications')
+
+
+
+def save_residency_reclassification(request):
+    """Save Texas Residency Questionnaire form data."""
+
+    if "access_token" not in request.session:
+        return redirect("login")
+
+    email = request.session.get("user_email")
+    if not email:
+        return redirect("login")
+
+    user = get_object_or_404(User, email=email)
+
+    if request.method == 'POST':
+        # Check if we're saving a draft or submitting
+        is_draft = "save_as_draft" in request.POST
+        is_submit = "submit_form" in request.POST
+
+        # Only proceed with saving if explicitly requested
+        if is_draft or is_submit:
+            # Get application ID if we already have one
+            application_id = request.session.get('current_application_id')
+
+            # If no existing application, create a new one
+            if not application_id:
+                application_type = request.session.get('selected_form_type')
+                if not application_type:
+                    messages.error(request, "Form type not found. Please try again.")
+                    return redirect('Applications')
+
+                # Create the application record
+                application = Application.objects.create(
+                    user=user,
+                    type=application_type,
+                    application_name=f"New {application_type.replace('_', ' ').title()} Application",
+                    status='draft' if is_draft else 'pending',
+                    submitted_at=None if is_draft else timezone.now()
+                )
+                # Store the application ID in the session for subsequent saves
+                request.session['current_application_id'] = application.id  
+            else:
+                # Get existing application if we have an ID
+                try:
+                    application = Application.objects.get(id=application_id, user=user)
+
+                    # Update status based on button clicked
+                    if is_draft:
+                        application.status = "draft"
+                        application.submitted_at = None
+                    elif is_submit:
+                        application.status = "pending"
+                        application.submitted_at = timezone.now()
+
+                    application.save()
+                except Application.DoesNotExist:
+                    messages.error(request, "Application not found.")
+                    return redirect('Applications')
+
+            # Create or update the Texas Residency form
+            texas_residency_form, created = TexasResidencyForm.objects.get_or_create(  
+                application=application,
+                defaults={
+                    'student_name': request.POST.get('student_name', ''),
+                    'date_of_birth': request.POST.get('date_of_birth', None),  # Handle DateFields appropriately
+                    'age': request.POST.get('age', None),  # Handle IntegerFields if need be
+                    'term': request.POST.get('term', ''),
+                    'student_id_number': request.POST.get('student_id_number', ''),
+                    'attended_texas_public_college': request.POST.get('attended_texas_public_college', ''),
+                    'texas_public_institution': request.POST.get('texas_public_institution', ''),
+                    'last_enrolled_fall_year': request.POST.get('last_enrolled_fall_year', None), # Handle IntegerFields and nulls
+                    'last_enrolled_spring_year': request.POST.get('last_enrolled_spring_year', None),
+                    'tuition_status': request.POST.get('tuition_status', ''),
+                    'in_state_reason': request.POST.get('in_state_reason', ''),
+                    'purpose_for_being_in_texas': request.POST.get('purpose_for_being_in_texas', ''),
+                    'general_comments': request.POST.get('general_comments', ''),
+                    # ... add all other fields from your form
+                }
+            )
+
+            # If form already existed, update its fields
+            if not created:
+                texas_residency_form.name = request.POST.get('student_name', '')
+                texas_residency_form.date_of_birth = request.POST.get('date_of_birth', None)
+                texas_residency_form.age = request.POST.get('age', None)
+                texas_residency_form.term = request.POST.get('term', '')
+                texas_residency_form.student_id_number = request.POST.get('student_id_number', '')
+                texas_residency_form.attended_texas_public_college = request.POST.get('attended_texas_public_college', '')
+                texas_residency_form.texas_public_institution = request.POST.get('texas_public_institution', '')
+                texas_residency_form.last_enrolled_fall_year = request.POST.get('last_enrolled_fall_year', None)
+                texas_residency_form.last_enrolled_spring_year = request.POST.get('last_enrolled_spring_year', None)
+                texas_residency_form.tuition_status = request.POST.get('tuition_status', '')
+                texas_residency_form.in_state_reason = request.POST.get('in_state_reason', '')
+                texas_residency_form.purpose_for_being_in_texas = request.POST.get('purpose_for_being_in_texas', '')
+                texas_residency_form.general_comments = request.POST.get('general_comments', '')
+                # ... update all other fields
+                texas_residency_form.save()
+
+            # Update application name (customize as needed)
+            application.application_name = f"Texas Residency Questionnaire - {texas_residency_form.name}"
+            application.save()
+
+            # If submitting, update application status
+            if is_submit:
+                application.status = "pending"
+                application.submitted_at = timezone.now()
+                application.save()
+
+            # Clean up session
+            if 'current_application_id' in request.session:
+                del request.session['current_application_id']
+            if 'selected_form_type' in request.session:
+                del request.session['selected_form_type']
+
+            messages.success(request, "Texas Residency Questionnaire saved successfully.")
+        else:
+            # User is canceling - just redirect back without saving
+            if 'selected_form_type' in request.session:
+                del request.session['selected_form_type']
+
+        # Redirect to Applications after saving or submitting
+        return redirect('Applications')
+
+    # If not POST, just redirect to Applications
+    return redirect('Applications')
+
+
+
+
+
 def preview_application(request, app_id):
     """View function to display a read-only preview of an application form."""
     # Get the application
@@ -694,6 +835,7 @@ def preview_application(request, app_id):
     # Get the form based on application type
     ferpa_form = None
     texas_affidavit = None
+    texas_residency_form = None
     
     if application.type == 'ferpa':
         ferpa_form = getattr(application, 'ferpa_form', None)
@@ -705,6 +847,11 @@ def preview_application(request, app_id):
         if not texas_affidavit:
             return HttpResponse("Texas Residency Affidavit data not found for this application.", status=404)
         template_name = "Preview_Texas_Residency_Affidavit.html"
+    elif application.type == 'texas_questionnaire':  
+        texas_residency_form = getattr(application, 'texas_residency_form', None)  
+        if not texas_residency_form:
+            return HttpResponse("Texas Residency Questionnaire data not found for this application.", status=404)
+        template_name = "Preview_Texas_Residency_Questionnaire.html"  
     else:
         return HttpResponse("Unknown application type.", status=400)
     
@@ -719,6 +866,8 @@ def preview_application(request, app_id):
         context["ferpa_form"] = ferpa_form
     elif texas_affidavit:
         context["texas_affidavit"] = texas_affidavit
+    elif texas_residency_form:  
+        context["texas_residency_form"] = texas_residency_form
     
     return render(request, template_name, context)
 

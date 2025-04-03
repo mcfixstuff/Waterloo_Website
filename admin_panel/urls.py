@@ -28,7 +28,7 @@ urlpatterns = [
     # storing data from from 1 
     path('save-ferpa-form/', views.save_ferpa_form, name='save_ferpa_form'),
     path('save-texas-affidavit-form/', views.save_texas_affidavit_form, name='save_texas_affidavit_form'),
-    
+    path('save_residency_reclassification/', views.save_residency_reclassification, name='save_residency_reclassification'),
     
     
     path("preview_application/<int:app_id>/", preview_application, name="preview_application"),

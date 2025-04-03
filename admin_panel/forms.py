@@ -334,6 +334,115 @@ class TexasResidencyAffidavitForm(forms.ModelForm):
         return cleaned_data
 
 
+class TexasResidencyForm(forms.Form):
+    """Form for Texas Residency Questionnaire"""
+
+    # Part A: Student Basic Information
+    name = forms.CharField(
+        label="Name",
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    date_of_birth = forms.DateField(
+        label="Date of Birth",
+        required=True,
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+    )
+    age = forms.IntegerField(
+        label="Age",
+        required=True,
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+    term = forms.CharField(
+        label="Term",
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    student_id_number = forms.CharField(
+        label="Student ID Number",
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    # Part B: Previous Enrollment
+    attended_texas_public_college = forms.ChoiceField(
+        label="1. During the 12 months prior to the term for which you are applying, did you attend a public college or university in Texas in a fall or spring term?",
+        choices=[('yes', 'Yes'), ('no', 'No')],
+        required=True,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+    )
+    texas_public_institution = forms.CharField(
+        label="2. If yes, what Texas public institution did you last attend? (Give full name, not just initials)",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    last_enrolled_fall_year = forms.IntegerField(
+        label="Fall, Year",
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+    last_enrolled_spring_year = forms.IntegerField(
+        label="Spring, Year",
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+    tuition_status = forms.ChoiceField(
+        label="4. During your last semester at a Texas public institution, did you pay resident (in-state) or nonresident (out-of-state) tuition?",
+        choices=[
+            ('resident', 'Resident (in-state)'),
+            ('nonresident', 'Nonresident (out-of-state)'),
+            ('unknown', 'Unknown')
+        ],
+        required=False,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+    )
+    in_state_reason = forms.CharField(
+        label="5. If you paid in-state tuition at your last institution, was it because you were a Texas resident or because you were a nonresident who received a...",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    # Part C: Intent to Establish Domicile (Example - only a few fields)
+    purpose_for_being_in_texas = forms.ChoiceField(
+        label="1. What is your purpose for being in Texas?",
+        choices=[
+            ('college', 'Go to College'),
+            ('home', 'Establish/Maintain a Home'),
+            ('work', 'Work Assignment'),
+            ('other', 'Other')
+        ],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    # ... (Add all other fields from the questionnaire)
+
+    # Part H: General Comments
+    general_comments = forms.CharField(
+        label="Is there any additional information that you believe your college should know in evaluating your eligibility to be classified as a resident? If so, please provide it below:",
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4})
+    )
+
+    # File Attachments (This is a basic example - adjust as needed)
+    # supporting_documents = forms.FileField(
+    #     label="Upload Supporting Documents (Minimum 2):",
+    #     required=False,
+    #     widget=forms.FileInput(attrs={'multiple': True})
+    # )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # You can add logic here to conditionally show/hide fields
+        # based on other field values if needed.
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Add any form-level validation here (e.g., cross-field validation)
+        return cleaned_data
+
+
 class ApplicationReviewForm(forms.ModelForm):
     """Form for reviewing applications"""
     

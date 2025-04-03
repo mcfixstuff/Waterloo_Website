@@ -37,6 +37,7 @@ class Application(models.Model):
     TYPE_CHOICES = [
         ('ferpa', 'FERPA Authorization'),
         ('texas_residency', 'Texas Residency Affidavit'),
+        ('texas_questionnaire', 'Texas Residency Questionnaire'),
         ('other', 'Other Application Type')
     ]
     type = models.CharField(max_length=50, choices=TYPE_CHOICES)

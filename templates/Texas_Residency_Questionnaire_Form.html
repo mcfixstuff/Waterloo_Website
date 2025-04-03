@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residency Reclassification Questionnaire</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container my-4"> <!-- status banner -->
+    <div class="alert alert-info mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="alert-heading mb-0">
+                    Application Status: {{ application.get_status_display }}
+                </h5>
+                <p class="mb-0">
+                    Created: {{ application.created_at|date:"F d, Y" }}
+                </p>
+                {% if application.submitted_at %}
+                <p class="mb-0">
+                    Submitted: {{ application.submitted_at|date:"F d, Y" }}
+                </p>
+                {% endif %}
+                {% if application.reviewer %}
+                <p class="mb-0">Reviewer: {{ application.reviewer.username }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">Back to Dashboard</a>
+            </div>
+        </div>
+        {% if application.review_comments %}
+        <hr />
+        <h6>Review Comments:</h6>
+        <p class="mb-0">{{ application.review_comments }}</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Residency Reclassification Questionnaire</h3>
+            <small>Determine if a student qualifies for resident tuition</small>
+        </div>
+        <div class="card-body">
+            {% if application %}
+                <form method="post" action="{% url 'edit_residency_reclassification' application.id %}">
+            {% else %}
+                <form method="post" action="{% url 'save_residency_reclassification' %}">
+            {% endif %}
+                {% csrf_token %}
+
+                {% if messages %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Please correct the following errors:</h5>
+                        {% for message in messages %}
+                            <p class="mb-0">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <h4>Part A: Student Basic Information</h4>
+                    <p class="text-muted">You may apply for a future term or the current term before the ORD (Official Reporting Date).</p>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ residency_form.name }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="date_of_birth" class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" value="{{ residency_form.date_of_birth|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="age" class="form-label">Age</label>
+                            <input type="number" class="form-control" id="age" name="age" value="{{ residency_form.age }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="term" class="form-label">Term</label>
+                            <input type="text" class="form-control" id="term" name="term" value="{{ residency_form.term }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="student_id_number" class="form-label">Student ID Number</label>
+                            <input type="text" class="form-control" id="student_id_number" name="student_id_number" value="{{ residency_form.student_id_number }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h4>Part B: Previous Enrollment</h4>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">1. During the 12 months prior to the term for which you are applying, did you attend a public college or university in Texas in a fall or spring term?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="attended_texas_public_college" id="attended_texas_public_college_yes" value="yes" {% if residency_form.attended_texas_public_college %}checked{% endif %} required>
+                                <label class="form-check-label" for="attended_texas_public_college_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="attended_texas_public_college" id="attended_texas_public_college_no" value="no" {% if not residency_form.attended_texas_public_college %}checked{% endif %} required>
+                                <label class="form-check-label" for="attended_texas_public_college_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="texas_public_institution" class="form-label">2. If yes, what Texas public institution did you last attend? (Give full name, not just initials)</label>
+                            <input type="text" class="form-control" id="texas_public_institution" name="texas_public_institution" value="{{ residency_form.texas_public_institution }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="last_enrolled_fall_year" class="form-label">3. In which terms were you last enrolled? (Indicate all that apply) Fall, Year</label>
+                            <input type="text" class="form-control" id="last_enrolled_fall_year" name="last_enrolled_fall_year" value="{{ residency_form.last_enrolled_fall_year }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="last_enrolled_spring_year" class="form-label">Spring, Year</label>
+                            <input type="text" class="form-control" id="last_enrolled_spring_year" name="last_enrolled_spring_year" value="{{ residency_form.last_enrolled_spring_year }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">4. During your last semester at a Texas public institution, did you pay resident (in-state) or nonresident (out-of-state) tuition? Check one.</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="last_tuition_status" id="last_tuition_status_resident" value="resident" {% if residency_form.last_tuition_status == 'resident' %}checked{% endif %}>
+                                <label class="form-check-label" for="last_tuition_status_resident">Resident (in-state)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="last_tuition_status" id="last_tuition_status_nonresident" value="nonresident" {% if residency_form.last_tuition_status == 'nonresident' %}checked{% endif %}>
+                                <label class="form-check-label" for="last_tuition_status_nonresident">Nonresident (out-of-state)</label>
+                            </div>
+                             <div class="form-check">
+                                <input class="form-check-input" type="radio" name="last_tuition_status" id="last_tuition_status_unknown" value="unknown" {% if residency_form.last_tuition_status == 'unknown' %}checked{% endif %}>
+                                <label class="form-check-label" for="last_tuition_status_unknown">Unknown</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">5. If you paid in-state tuition at your last institution, was it because you were a Texas resident or because you were a nonresident who received a ...</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="in_state_tuition_basis" id="in_state_tuition_basis_resident" value="resident" {% if residency_form.in_state_tuition_basis == 'resident' %}checked{% endif %}>
+                                <label class="form-check-label" for="in_state_tuition_basis_resident">Texas resident</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="in_state_tuition_basis" id="in_state_tuition_basis_nonresident_waiver" value="nonresident_waiver" {% if residency_form.in_state_tuition_basis == 'nonresident_waiver' %}checked{% endif %}>
+                                <label class="form-check-label" for="in_state_tuition_basis_nonresident_waiver">Nonresident who received a waiver</label>
+                            </div>
+                             <div class="form-check">
+                                <input class="form-check-input" type="radio" name="in_state_tuition_basis" id="in_state_tuition_basis_unknown" value="unknown" {% if residency_form.in_state_tuition_basis == 'unknown' %}checked{% endif %}>
+                                <label class="form-check-label" for="in_state_tuition_basis_unknown">Unknown</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h4>Part C: Questions if you answered "No" to Question 1 of Part B</h4>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="country_of_residence" class="form-label">Of which country are you a resident?</label>
+                            <input type="text" class="form-control" id="country_of_residence" name="country_of_residence" value="{{ residency_form.country_of_residence }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Are you a resident of Texas?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="texas_resident" id="texas_resident_yes" value="yes" {% if residency_form.texas_resident == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="texas_resident_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="texas_resident" id="texas_resident_no" value="no" {% if residency_form.texas_resident == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="texas_resident_no">No</label>
+                            </div>
+                             <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="texas_resident" id="texas_resident_unknown" value="unknown" {% if residency_form.texas_resident == 'unknown' %}checked{% endif %}>
+                                <label class="form-check-label" for="texas_resident_unknown">I don't know</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h4>Part D: Acquisition of High School Diploma or GED</h4>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">1a. Did you graduate or will you graduate from a Texas high school or receive a GED certificate in Texas?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="graduated_texas_high_school" id="graduated_texas_high_school_yes" value="True" {% if residency_form.graduated_texas_high_school %}checked{% endif %}>
+                                <label class="form-check-label" for="graduated_texas_high_school_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="graduated_texas_high_school" id="graduated_texas_high_school_no" value="False" {% if not residency_form.graduated_texas_high_school %}checked{% endif %}>
+                                <label class="form-check-label" for="graduated_texas_high_school_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="high_school_name" class="form-label">1b. High school name</label>
+                            <input type="text" class="form-control" id="high_school_name" name="high_school_name" value="{{ residency_form.high_school_name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="high_school_city" class="form-label">1b. High school city</label>
+                            <input type="text" class="form-control" id="high_school_city" name="high_school_city" value="{{ residency_form.high_school_city }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">2. Did you live in Texas for 36 months leading up to graduation from high school or receiving your GED certificate?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="lived_in_texas_36_months" id="lived_in_texas_36_months_yes" value="True" {% if residency_form.lived_in_texas_36_months %}checked{% endif %}>
+                                <label class="form-check-label" for="lived_in_texas_36_months_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="lived_in_texas_36_months" id="lived_in_texas_36_months_no" value="False" {% if not residency_form.lived_in_texas_36_months %}checked{% endif %}>
+                                <label class="form-check-label" for="lived_in_texas_36_months_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">3. Did you live in Texas for the 12 months prior to the term for which you are applying?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="lived_in_texas_12_months" id="lived_in_texas_12_months_yes" value="True" {% if residency_form.lived_in_texas_12_months %}checked{% endif %}>
+                                <label class="form-check-label" for="lived_in_texas_12_months_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="lived_in_texas_12_months" id="lived_in_texas_12_months_no" value="False" {% if not residency_form.lived_in_texas_12_months %}checked{% endif %}>
+                                  <label class="form-check-label" for="lived_in_texas_12_months_no">No</label>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+  
+                  <div class="mb-4">
+                      <h4>Part E: Questions for Students who answered "No" to Question 3 of Part D</h4>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">1. Do you claim to have established a domicile in Texas?</label>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="claimed_texas_domicile" id="claimed_texas_domicile_yes" value="yes" {% if residency_form.claimed_texas_domicile == 'yes' %}checked{% endif %}>
+                                  <label class="form-check-label" for="claimed_texas_domicile_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="claimed_texas_domicile" id="claimed_texas_domicile_no" value="no" {% if residency_form.claimed_texas_domicile == 'no' %}checked{% endif %}>
+                                  <label class="form-check-label" for="claimed_texas_domicile_no">No</label>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">2. Are you married?</label>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="married" id="married_yes" value="yes" {% if residency_form.married == 'yes' %}checked{% endif %}>
+                                  <label class="form-check-label" for="married_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="married" id="married_no" value="no" {% if residency_form.married == 'no' %}checked{% endif %}>
+                                  <label class="form-check-label" for="married_no">No</label>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">3. What is your relationship to your parent or legal guardian?</label>
+                              <div class="form-check">
+                                  <input class="form-check-input" type="radio" name="relationship_to_parent" id="relationship_self" value="self" {% if residency_form.relationship_to_parent == 'self' %}checked{% endif %}>
+                                  <label class="form-check-label" for="relationship_self">Self</label>
+                              </div>
+                              <div class="form-check">
+                                  <input class="form-check-input" type="radio" name="relationship_to_parent" id="relationship_parent" value="parent" {% if residency_form.relationship_to_parent == 'parent' %}checked{% endif %}>
+                                  <label class="form-check-label" for="relationship_parent">Parent</label>
+                              </div>
+                              <div class="form-check">
+                                  <input class="form-check-input" type="radio" name="relationship_to_parent" id="relationship_guardian" value="legal_guardian" {% if residency_form.relationship_to_parent == 'legal_guardian' %}checked{% endif %}>
+                                  <label class="form-check-label" for="relationship_guardian">Legal Guardian</label>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+  
+                  <div class="mb-4">
+                      <h4>Part F: Questions for students who answered "Yes" to Question 1 of Part E or who answered "Self" to Question 3 of Part E</h4>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">1a. Are you a U.S. Citizen?</label>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="us_citizen" id="us_citizen_yes" value="yes" {% if residency_form.us_citizen == 'yes' %}checked{% endif %}>
+                                  <label class="form-check-label" for="us_citizen_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="us_citizen" id="us_citizen_no" value="no" {% if residency_form.us_citizen == 'no' %}checked{% endif %}>
+                                  <label class="form-check-label" for="us_citizen_no">No</label>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">1b. If no, are you a Permanent Resident?</label>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="permanent_resident" id="permanent_resident_yes" value="yes" {% if residency_form.permanent_resident == 'yes' %}checked{% endif %}>
+                                  <label class="form-check-label" for="permanent_resident_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="permanent_resident" id="permanent_resident_no" value="no" {% if residency_form.permanent_resident == 'no' %}checked{% endif %}>
+                                  <label class="form-check-label" for="permanent_resident_no">No</label>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">1c. If no, is your application for Permanent Resident pending?</label>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="pending_residency" id="pending_residency_yes" value="yes" {% if residency_form.pending_residency == 'yes' %}checked{% endif %}>
+                                  <label class="form-check-label" for="pending_residency_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="pending_residency" id="pending_residency_no" value="no" {% if residency_form.pending_residency == 'no' %}checked{% endif %}>
+                                  <label class="form-check-label" for="pending_residency_no">No</label>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">2. Do you hold a visa?</label>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="holds_visa" id="holds_visa_yes" value="yes" {% if residency_form.holds_visa == 'yes' %}checked{% endif %}>
+                                  <label class="form-check-label" for="holds_visa_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="holds_visa" id="holds_visa_no" value="no" {% if residency_form.holds_visa == 'no' %}checked{% endif %}>
+                                  <label class="form-check-label" for="holds_visa_no">No</label>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label for="visa_type" class="form-label">3. If yes, Visa type</label>
+                              <input type="text" class="form-control" id="visa_type" name="visa_type" value="{{ residency_form.visa_type }}">
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">4. Do you live in Texas?</label>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="lives_in_texas" id="lives_in_texas_yes" value="yes" {% if residency_form.lives_in_texas == 'yes' %}checked{% endif %}>
+                                  <label class="form-check-label" for="lives_in_texas_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="lives_in_texas" id="lives_in_texas_no" value="no" {% if residency_form.lives_in_texas == 'no' %}checked{% endif %}>
+                                  <label class="form-check-label" for="lives_in_texas_no">No</label>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-6">
+                              <label for="years_in_texas" class="form-label">5a. How long have you lived in Texas? Years</label>
+                              <input type="number" class="form-control" id="years_in_texas" name="years_in_texas" value="{{ residency_form.years_in_texas }}">
+                          </div>
+                          <div class="col-md-6">
+                              <label for="months_in_texas" class="form-label">Months</label>
+                              <input type="number" class="form-control" id="months_in_texas" name="months_in_texas" value="{{ residency_form.months_in_texas }}">
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">5b. What is your purpose for being in Texas?</label>
+                              <select class="form-select" id="purpose_for_texas" name="purpose_for_texas">
+                                  <option value="" disabled {% if not residency_form.purpose_for_texas %}selected{% endif %}>Select Purpose</option>
+                                  <option value="college" {% if residency_form.purpose_for_texas == 'college' %}selected{% endif %}>Go to College</option>
+                                  <option value="home" {% if residency_form.purpose_for_texas == 'home' %}selected{% endif %}>Establish/Maintain a Home</option>
+                                  <option value="work" {% if residency_form.purpose_for_texas == 'work' %}selected{% endif %}>Work Assignment</option>
+                                  <option value="other" {% if residency_form.purpose_for_texas == 'other' %}selected{% endif %}>Other</option>
+                              </select>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">6a. Is Texas your military home of record?</label>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="military_home_of_record" id="military_home_of_record_yes" value="yes" {% if residency_form.military_home_of_record == 'yes' %}checked{% endif %}>
+                                  <label class="form-check-label" for="military_home_of_record_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="military_home_of_record" id="military_home_of_record_no" value="no" {% if residency_form.military_home_of_record == 'no' %}checked{% endif %}>
+                                  <label class="form-check-label" for="military_home_of_record_no">No</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="military_home_of_record" id="military_home_of_record_na" value="na" {% if residency_form.military_home_of_record == 'na' %}checked{% endif %}>
+                                  <label class="form-check-label" for="military_home_of_record_na">N/A</label>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label for="military_legal_residence" class="form-label">6b. If no, what is your military legal residence?</label>
+                              <input type="text" class="form-control" id="military_legal_residence" name="military_legal_residence" value="{{ residency_form.military_legal_residence }}">
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">7a. Do you hold title to property in Texas?</label>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="holds_title_to_property" id="holds_title_to_property_yes" value="yes" {% if residency_form.holds_title_to_property == 'yes' %}checked{% endif %}>
+                                  <label class="form-check-label" for="holds_title_to_property_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="holds_title_to_property" id="holds_title_to_property_no" value="no" {% if residency_form.holds_title_to_property == 'no' %}checked{% endif %}>
+                                  <label class="form-check-label" for="holds_title_to_property_no">No</label>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label for="date_title_acquired" class="form-label">7b. If yes, date title acquired</label>
+                              <input type="date" class="form-control" id="date_title_acquired" name="date_title_acquired" value="{{ residency_form.date_title_acquired|date:'Y-m-d' }}">
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label class="form-label">8a. Do you own a business in Texas?</label>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="owns_business" id="owns_business_yes" value="yes" {% if residency_form.owns_business == 'yes' %}checked{% endif %}>
+                                  <label class="form-check-label" for="owns_business_yes">Yes</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="owns_business" id="owns_business_no" value="no" {% if residency_form.owns_business == 'no' %}checked{% endif %}>
+                                  <label class="form-check-label" for="owns_business_no">No</label>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="row mb-3">
+                          <div class="col-md-12">
+                              <label for="date_business_acquired" class="form-label">8b. If yes, date business acquired</label>
+                              <input type="date" class="form-control" id="date_business_acquired" name="date_business_acquired" value="{{ residency_form.date_business_acquired|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">9a. Are you gainfully employed?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="gainfully_employed" id="gainfully_employed_yes" value="yes" {% if residency_form.gainfully_employed == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="gainfully_employed_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="gainfully_employed" id="gainfully_employed_no" value="no" {% if residency_form.gainfully_employed == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="gainfully_employed_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">9b. Are you receiving social service support from the state of Texas?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="received_social_services" id="received_social_services_yes" value="yes" {% if residency_form.received_social_services == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="received_social_services_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="received_social_services" id="received_social_services_no" value="no" {% if residency_form.received_social_services == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="received_social_services_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">10a. Are you married to a Texas resident?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="married_to_resident" id="married_to_resident_yes" value="yes" {% if residency_form.married_to_resident == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="married_to_resident_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="married_to_resident" id="married_to_resident_no" value="no" {% if residency_form.married_to_resident == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="married_to_resident_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">10b. If yes, on what basis does your spouse claim to be a Texas resident?</label>
+                            <select class="form-select" id="spouse_basis_residency" name="spouse_basis_residency">
+                                <option value="" disabled {% if not residency_form.spouse_basis_residency %}selected{% endif %}>Select Basis</option>
+                                <option value="8a" {% if residency_form.spouse_basis_residency == '8a' %}selected{% endif %}>8a. Hold Title</option>
+                                <option value="8b" {% if residency_form.spouse_basis_residency == '8b' %}selected{% endif %}>8b. Ownership Interest</option>
+                                <option value="9a" {% if residency_form.spouse_basis_residency == '9a' %}selected{% endif %}>9a. Gainful Employment</option>
+                                <option value="9b" {% if residency_form.spouse_basis_residency == '9b' %}selected{% endif %}>9b. Social Services Support</option>
+                                <option value="10a" {% if residency_form.spouse_basis_residency == '10a' %}selected{% endif %}>10a. Texas Resident</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="years_married_to_resident" class="form-label">10c. How long have you been married to the Texas resident? Years</label>
+                            <input type="number" class="form-control" id="years_married_to_resident" name="years_married_to_resident" value="{{ residency_form.years_married_to_resident }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="months_married_to_resident" class="form-label">Months</label>
+                            <input type="number" class="form-control" id="months_married_to_resident" name="months_married_to_resident" value="{{ residency_form.months_married_to_resident }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h4>Part G: Questions for students who answered "Yes" to Question 2 of Part E or who answered "Parent" or "Legal Guardian" to Question 3 of Part E</h4>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">1. Is your parent or legal guardian a U.S. Citizen?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_us_citizen" id="parent_guardian_us_citizen_yes" value="yes" {% if residency_form.parent_guardian_us_citizen == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_us_citizen_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_us_citizen" id="parent_guardian_us_citizen_no" value="no" {% if residency_form.parent_guardian_us_citizen == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_us_citizen_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">2. If no, is your parent or legal guardian a Permanent Resident?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_permanent_resident" id="parent_guardian_permanent_resident_yes" value="yes" {% if residency_form.parent_guardian_permanent_resident == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_permanent_resident_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_permanent_resident" id="parent_guardian_permanent_resident_no" value="no" {% if residency_form.parent_guardian_permanent_resident == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_permanent_resident_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">3. If no, is your parent or legal guardian's application for Permanent Resident pending?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_pending_residency" id="parent_guardian_pending_residency_yes" value="yes" {% if residency_form.parent_guardian_pending_residency == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_pending_residency_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_pending_residency" id="parent_guardian_pending_residency_no" value="no" {% if residency_form.parent_guardian_pending_residency == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_pending_residency_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">4. Does your parent or legal guardian hold a visa?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_visa_status" id="parent_guardian_visa_status_yes" value="yes" {% if residency_form.parent_guardian_visa_status == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_visa_status_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_visa_status" id="parent_guardian_visa_status_no" value="no" {% if residency_form.parent_guardian_visa_status == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_visa_status_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="parent_guardian_visa_type" class="form-label">5. If yes, Visa type</label>
+                            <input type="text" class="form-control" id="parent_guardian_visa_type" name="parent_guardian_visa_type" value="{{ residency_form.parent_guardian_visa_type }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">6. Does your parent or legal guardian live in Texas?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_lives_in_texas" id="parent_guardian_lives_in_texas_yes" value="yes" {% if residency_form.parent_guardian_lives_in_texas == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_lives_in_texas_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_lives_in_texas" id="parent_guardian_lives_in_texas_no" value="no" {% if residency_form.parent_guardian_lives_in_texas == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_lives_in_texas_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="parent_guardian_years_in_texas" class="form-label">7a. How long has your parent or legal guardian lived in Texas? Years</label>
+                            <input type="number" class="form-control" id="parent_guardian_years_in_texas" name="parent_guardian_years_in_texas" value="{{ residency_form.parent_guardian_years_in_texas }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="parent_guardian_months_in_texas" class="form-label">Months</label>
+                            <input type="number" class="form-control" id="parent_guardian_months_in_texas" name="parent_guardian_months_in_texas" value="{{ residency_form.parent_guardian_months_in_texas }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">7b. What is your parent or legal guardian's purpose for being in Texas?</label>
+                            <select class="form-select" id="parent_guardian_purpose_for_texas" name="parent_guardian_purpose_for_texas">
+                                <option value="" disabled {% if not residency_form.parent_guardian_purpose_for_texas %}selected{% endif %}>Select Purpose</option>
+                                <option value="college" {% if residency_form.parent_guardian_purpose_for_texas == 'college' %}selected{% endif %}>Go to College</option>
+                                <option value="home" {% if residency_form.parent_guardian_purpose_for_texas == 'home' %}selected{% endif %}>Establish/Maintain a Home</option>
+                                <option value="work" {% if residency_form.parent_guardian_purpose_for_texas == 'work' %}selected{% endif %}>Work Assignment</option>
+                                <option value="other" {% if residency_form.parent_guardian_purpose_for_texas == 'other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">8a. Is Texas your parent or legal guardian's military home of record?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_military_home_of_record" id="parent_guardian_military_home_of_record_yes" value="yes" {% if residency_form.parent_guardian_military_home_of_record == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_military_home_of_record_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_military_home_of_record" id="parent_guardian_military_home_of_record_no" value="no" {% if residency_form.parent_guardian_military_home_of_record == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_military_home_of_record_no">No</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_military_home_of_record" id="parent_guardian_military_home_of_record_na" value="na" {% if residency_form.parent_guardian_military_home_of_record == 'na' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_military_home_of_record_na">N/A</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="parent_guardian_military_legal_residence" class="form-label">8b. If no, what is your parent or legal guardian's military legal residence?</label>
+                            <input type="text" class="form-control" id="parent_guardian_military_legal_residence" name="parent_guardian_military_legal_residence" value="{{ residency_form.parent_guardian_military_legal_residence }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">9a. Does your parent or legal guardian hold title to property in Texas?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_holds_title_to_property" id="parent_guardian_holds_title_to_property_yes" value="yes" {% if residency_form.parent_guardian_holds_title_to_property == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_holds_title_to_property_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_holds_title_to_property" id="parent_guardian_holds_title_to_property_no" value="no" {% if residency_form.parent_guardian_holds_title_to_property == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_holds_title_to_property_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="parent_guardian_date_title_acquired" class="form-label">9b. If yes, date title acquired</label>
+                            <input type="date" class="form-control" id="parent_guardian_date_title_acquired" name="parent_guardian_date_title_acquired" value="{{ residency_form.parent_guardian_date_title_acquired|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">10a. Does your parent or legal guardian own a business in Texas?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_owns_business" id="parent_guardian_owns_business_yes" value="yes" {% if residency_form.parent_guardian_owns_business == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_owns_business_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_owns_business" id="parent_guardian_owns_business_no" value="no" {% if residency_form.parent_guardian_owns_business == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_owns_business_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="parent_guardian_date_business_acquired" class="form-label">10b. If yes, date business acquired</label>
+                            <input type="date" class="form-control" id="parent_guardian_date_business_acquired" name="parent_guardian_date_business_acquired" value="{{ residency_form.parent_guardian_date_business_acquired|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">11a. Is your parent or legal guardian gainfully employed?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_gainfully_employed" id="parent_guardian_gainfully_employed_yes" value="yes" {% if residency_form.parent_guardian_gainfully_employed == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_gainfully_employed_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_gainfully_employed" id="parent_guardian_gainfully_employed_no" value="no" {% if residency_form.parent_guardian_gainfully_employed == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_gainfully_employed_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">11b. Is your parent or legal guardian receiving social service support from the state of Texas?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_received_social_services" id="parent_guardian_received_social_services_yes" value="yes" {% if residency_form.parent_guardian_received_social_services == 'yes' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_received_social_services_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="parent_guardian_received_social_services" id="parent_guardian_received_social_services_no" value="no" {% if residency_form.parent_guardian_received_social_services == 'no' %}checked{% endif %}>
+                                <label class="form-check-label" for="parent_guardian_received_social_services_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h4>Part H: General Comments</h4>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="general_comments" class="form-label">Is there any additional information that you believe your college should know in evaluating your eligibility to be classified as a resident? If so, please provide it below:</label>
+                            <textarea class="form-control" id="general_comments" name="general_comments" rows="4">{{ residency_form.general_comments }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h4>File Attachments</h4>
+                    <p class="text-muted">A minimum of two of the following supporting documents are required to complete your residency questionnaire:</p>
+                    <ul class="list-unstyled">
+                        <li>Apartment lease, mortgage voucher, student/parent's name must be on the current lease and one that is 12 months old.</li>
+                        <li>Texas driver's license, showing a Texas address, student/parent's name must be on the current license and issued at least 12 months prior to the Census Date.</li>
+                        <li>Texas motor vehicle registration, student/parent's name must be on the current registration and issued at least 12 months prior to the Census Date.</li>
+                        <li>A current Texas voter registration card, student/parent's name must be on the current registration and issued at least 12 months prior to the Census Date.</li>
+                        <li>Two utility bills, student/parent's name must be on the current utility bills (one that is 12 months old) showing name and Texas address.</li>
+                        <li>Credit Report, showing the address length of time.</li>
+                        <li>TX High School Transcript (only for non-resident students)</li>
+                    </ul>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="supporting_documents" class="form-label">Upload Supporting Documents (Minimum 2):</label>
+                            <input type="file" class="form-control" id="supporting_documents" name="supporting_documents" multiple>
+                            <small class="form-text text-muted">Please upload at least two of the documents listed above.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Signature:</strong></label>
+                            {% if user.signature_image %}
+                                <div class="border p-3 mb-2 text-center">
+                                    <img src="{{ user.signature_image.url }}" alt="Your signature"
+                                         class="img-fluid" style="max-height: 100px;" />
+                                    <input type="hidden" name="use_existing_signature" value="true">
+                                </div>
+                                <div class="form-text">Your saved signature will be used on this form.</div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <p><strong>You don't have a signature on file.</strong></p>
+                                    <p>Please go to the <a href="{% url 'Applications' %}" class="alert-link">Applications</a> section and upload your signature first.</p>
+                                </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        document.querySelector('button[type="submit"]').disabled = true;
+                                    });
+                                </script>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">
+                            Please Retain a Copy for your Records<br>
+                            Submit to Registrar's Office
+                        </small>
+                        <div>
+                            <button type="submit" class="btn btn-secondary" name="save_as_draft" value="true">
+                                Save as Draft
+                            </button>
+                            <button type="submit" class="btn btn-primary" name="submit_form" value="true">
+                                Submit Form
+                            </button>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        Residency Reclassification Questionnaire<br>
+                        Page 1 of 1
+                    </small>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+                                    
