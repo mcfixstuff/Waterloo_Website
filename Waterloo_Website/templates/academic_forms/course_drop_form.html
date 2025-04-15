@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Drop Form</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Course Drop Request Form</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% if is_edit %}{% url 'edit_form' form.id %}{% else %}{% url 'new_course_drop_form' %}{% endif %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="student_name" class="form-label">Student Name</label>
+                        <input type="text" class="form-control" id="student_name" name="student_name"
+                               value="{{ form.data.student_name|default:user.username }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="student_id" class="form-label">Student ID</label>
+                        <input type="text" class="form-control" id="student_id" name="student_id"
+                               value="{{ form.data.student_id|default:'' }}" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="semester" class="form-label">Semester</label>
+                        <select class="form-select" id="semester" name="semester" required>
+                            <option value="" disabled {% if not form.data.semester %}selected{% endif %}>Select Semester</option>
+                            <option value="Spring" {% if form.data.semester == "Spring" %}selected{% endif %}>Spring</option>
+                            <option value="Summer" {% if form.data.semester == "Summer" %}selected{% endif %}>Summer</option>
+                            <option value="Fall" {% if form.data.semester == "Fall" %}selected{% endif %}>Fall</option>
+                            <option value="Winter" {% if form.data.semester == "Winter" %}selected{% endif %}>Winter</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="year" class="form-label">Year (YY)</label>
+                        <input type="text" class="form-control" id="year" name="year"
+                               value="{{ form.data.year|default:'' }}" placeholder="YY" maxlength="2" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject"
+                               value="{{ form.data.subject|default:'' }}" placeholder="e.g., COSC" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="catalog_number" class="form-label">Catalog Number</label>
+                        <input type="text" class="form-control" id="catalog_number" name="catalog_number"
+                               value="{{ form.data.catalog_number|default:'' }}" placeholder="e.g., 4353" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="class_number" class="form-label">Class Number</label>
+                        <input type="text" class="form-control" id="class_number" name="class_number"
+                               value="{{ form.data.class_number|default:'' }}" placeholder="e.g., 12345" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="date" name="date"
+                               value="{{ form.data.date|default:'' }}" required>
+                    </div>
+                </div>
+
+                # Update this section in both special_circumstance_form.html and course_drop_form.html templates
+
+                <!-- Signature Section - Add this to both form templates -->
+<div class="row mb-4">
+    <div class="col-12">
+        <label for="signature" class="form-label">Signature</label>
+        {% if user.signature_image %}
+            <div class="border p-3 mb-2 text-center">
+                <img src="{{ user.signature_image.url }}" alt="Your signature" class="img-fluid" style="max-height: 100px;">
+                <input type="hidden" name="use_existing_signature" value="true">
+            </div>
+            <div class="form-text">Your saved signature will be used on this form.</div>
+        {% else %}
+            <div class="alert alert-warning">
+                <p><strong>You don't have a signature on file.</strong></p>
+                <p>Please go to the <a href="{% url 'Applications' %}" class="alert-link">Applications</a> section and upload your signature first.</p>
+            </div>
+            <!-- Disable the submit buttons if no signature is available -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const submitButtons = document.querySelectorAll('button[type="submit"]');
+                    submitButtons.forEach(button => {
+                        button.disabled = true;
+                    });
+                });
+            </script>
+        {% endif %}
+    </div>
+</div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'Applications' %}" class="btn btn-secondary">Cancel</a>
+                            <div>
+                                <button type="submit" class="btn btn-secondary" name="save" value="draft">
+                                    Save as Draft
+                                </button>
+                                <button type="submit" class="btn btn-primary" name="submit" value="submit">
+                                    Submit Form
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+Before running the project, ensure you have the following installed:
+Python 3.8+
+PostgreSQL
+pip install Pillow # file upload 
+
+pip install reportlab # pdf
+
+
+git clone <your-repo-url>
+
+cd Waterloo
+
+pip install -r requirements.txt
+
+
+Open psql or pgAdmin and run:
+
+
+
+CREATE DATABASE waterloo;
+CREATE USER amrindersingh WITH PASSWORD 'Amuo1234567@';
+ALTER ROLE amrindersingh SET client_encoding TO 'utf8';
+ALTER ROLE amrindersingh SET default_transaction_isolation TO 'read committed';
+ALTER ROLE amrindersingh SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE waterloo TO amrindersingh
+
+
+python manage.py migrate
+
+
+python manage.py runserver
+
+
+
+http://localhost:8000/
+
+
+
+
+???
+
+curl -L "https://graphql-engine-cdn.hasura.io/ddn/cli/v4/get.sh" | bash

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}User Management{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1">
+
+</head>
+<body>
+
+    <!-- navigation banner -->
+    <div class="banner">
+        <nav>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                {{ message }}
+                                <button onclick="this.parentElement.style.display='none';">×</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <ul>
+                <li><a href="{{ url_for('main.home') }}">Home</a></li>
+                
+                {% if 'user' in session %}
+					{% if session['exists'] is true and session['active'] is true%}
+                    	{% if session.get('role') == 'Admin' %}
+                        	<li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+						{% else %}
+                        	<li><a href="{{ url_for('dashboard.user_dashboard') }}">Dashboard</a></li>
+                    	{% endif %}
+					{% endif %}
+                    
+                    <li class="user-info">
+                        {{ session['user'] }} ({{ session['email'] }})
+                    </li>
+                    <li><a href="{{ url_for('auth.logout') }}" class="logout-btn">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('auth.microsoft_login') }}" class="ms-login-btn">Login with Microsoft</a></li>
+                    <li><a href="{{ url_for('auth.register') }}" class="ms-login-btn">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+	<script>
+        // Fallback if script.js is missing
+        fetch("{{ url_for('static', filename='js/script.js') }}")
+            .then(response => {
+                if (!response.ok) {
+                    console.warn("script.js not found.");
+                }
+            })
+            .catch(err => console.error("Error loading script.js:", err));
+    </script>
+</body>
+</html>

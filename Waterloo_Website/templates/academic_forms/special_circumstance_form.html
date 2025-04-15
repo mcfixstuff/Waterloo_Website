@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special Circumstance Form</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Special Circumstance Request Form</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% if is_edit %}{% url 'edit_form' form.id %}{% else %}{% url 'new_special_circumstance_form' %}{% endif %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="student_name" class="form-label">Student Name</label>
+                        <input type="text" class="form-control" id="student_name" name="student_name" 
+                               value="{{ form.data.student_name|default:user.username }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="student_id" class="form-label">Student ID</label>
+                        <input type="text" class="form-control" id="student_id" name="student_id" 
+                               value="{{ form.data.student_id|default:'' }}" required>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="degree" class="form-label">Degree Program</label>
+                        <select class="form-select" id="degree" name="degree" required>
+                            <option value="" disabled {% if not form.data.degree %}selected{% endif %}>Select Degree</option>
+                            <option value="Bachelors" {% if form.data.degree == "Bachelors" %}selected{% endif %}>Bachelors</option>
+                            <option value="Masters" {% if form.data.degree == "Masters" %}selected{% endif %}>Masters</option>
+                            <option value="Doctorate" {% if form.data.degree == "Doctorate" %}selected{% endif %}>Doctorate</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="graduation_date" class="form-label">Expected Graduation Date (MM/YYYY)</label>
+                        <input type="text" class="form-control" id="graduation_date" name="graduation_date" 
+                               value="{{ form.data.graduation_date|default:'' }}" placeholder="MM/YYYY" required>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="special_request_option" class="form-label">Special Request Option</label>
+                        <select class="form-select" id="special_request_option" name="special_request_option" required>
+                            <option value="" disabled {% if not form.data.special_request_option %}selected{% endif %}>Select Request Type</option>
+                            <option value="Full Record Hold" {% if form.data.special_request_option == "Full Record Hold" %}selected{% endif %}>Full Record Hold</option>
+                            <option value="Graduation Hold" {% if form.data.special_request_option == "Graduation Hold" %}selected{% endif %}>Graduation Hold</option>
+                            <option value="Transcript Hold" {% if form.data.special_request_option == "Transcript Hold" %}selected{% endif %}>Transcript Hold</option>
+                            <option value="Other" {% if form.data.special_request_option == "Other" %}selected{% endif %}>Other (please specify)</option>
+                        </select>
+                        <input type="text" class="form-control mt-2" id="other_option_detail" name="other_option_detail" 
+                               value="{{ form.data.other_option_detail|default:'' }}"
+                               style="display: {% if form.data.special_request_option == 'Other' %}block{% else %}none{% endif %};" 
+                               placeholder="Please specify">
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="justification" class="form-label">Justification</label>
+                        <textarea class="form-control" id="justification" name="justification" rows="4" required>{{ form.data.justification|default:'' }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="date" name="date" 
+                               value="{{ form.data.date|default:'' }}" required>
+                    </div>
+                </div>
+                
+                # Update this section in both special_circumstance_form.html and course_drop_form.html templates
+
+<!-- Signature Section - Add this to both form templates -->
+<div class="row mb-4">
+    <div class="col-12">
+        <label for="signature" class="form-label">Signature</label>
+        {% if user.signature_image %}
+            <div class="border p-3 mb-2 text-center">
+                <img src="{{ user.signature_image.url }}" alt="Your signature" class="img-fluid" style="max-height: 100px;">
+                <input type="hidden" name="use_existing_signature" value="true">
+            </div>
+            <div class="form-text">Your saved signature will be used on this form.</div>
+        {% else %}
+            <div class="alert alert-warning">
+                <p><strong>You don't have a signature on file.</strong></p>
+                <p>Please go to the <a href="{% url 'Applications' %}" class="alert-link">Applications</a> section and upload your signature first.</p>
+            </div>
+            <!-- Disable the submit buttons if no signature is available -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const submitButtons = document.querySelectorAll('button[type="submit"]');
+                    submitButtons.forEach(button => {
+                        button.disabled = true;
+                    });
+                });
+            </script>
+        {% endif %}
+    </div>
+</div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'Applications' %}" class="btn btn-secondary">Cancel</a>
+                            <div>
+                                <button type="submit" class="btn btn-secondary" name="save" value="draft">
+                                    Save as Draft
+                                </button>
+                                <button type="submit" class="btn btn-primary" name="submit" value="submit">
+                                    Submit Form
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const requestOption = document.getElementById('special_request_option');
+        const otherField = document.getElementById('other_option_detail');
+
+        function toggleOtherField() {
+            if (requestOption.value === 'Other') {
+                otherField.style.display = 'block';
+            } else {
+                otherField.style.display = 'none';
+            }
+        }
+
+        requestOption.addEventListener('change', toggleOtherField);
+        toggleOtherField();  // Initial check on load
+    });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

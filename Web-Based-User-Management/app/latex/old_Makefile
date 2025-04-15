@@ -1,0 +1,11 @@
+TEXFILE = special_circumstances.tex course_drop.tex 
+PDFFILES = $(TEXFILES:.tex=.pdf) 
+
+all: $(PDFFILES)
+
+%.pdf: %.tex
+	pdflatex -output-directory $(dir $(%.tex)) $(%.tex)
+	pdflatex -output-directory $(dir $(%.tex)) $(%.tex)
+
+clean:
+	rm -f $(PDFFILES) *.aux *.log *.out

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}User Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+	<h2>Welcome, {{ session['user'] }}!</h2>
+	<p><strong>Email:</strong> {{ session['email'] }}</p>
+	<p><strong>Role:</strong> {{ session['role'] }}</p>
+	<p><strong>Note:</strong> You are logged in as a regular user.</p>
+
+	<form action="{{ url_for('dashboard.request_form') }}" method="GET">
+		<label for="academicForm">Request an Academic Form:</label>
+		<select id="academicForm" name="form_id" required>
+			<option value="" disabled selected>Select a form</option>
+			<option value="1">Special Circumstance Form</option>
+			<option value="2">Instructor-Initiated Drop Form</option>
+		</select>
+		<button type="submit" class="btn btn-primary">Submit Request</button>
+	</form>
+
+	<h2>Your Academic Requests</h2>
+	{% if academic_requests %}
+	<div class="table-container">
+		<table class="table table-striped table-bordered text-center">
+			<thead class="table-dark">
+				<tr>
+					<th>ID</th>
+					<th>Form Type</th>
+					<th>Status</th>
+					<th>Submitted On</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for req in academic_requests %}
+				<tr>
+					<td>{{ req.id }}</td>
+					<td>
+						{% if req.form_type|string == "1" %}
+						Special Circumstance
+						{% elif req.form_type|string == "2" %}
+						Instructor Drop Form
+						{% else %}
+						Unknown Form
+						{% endif %}
+					</td>
+
+					<td class="status {{ req.status|lower|replace(' ', '-') }}">
+						{{ req.status.replace('_', ' ').title() }}
+					</td>
+
+					<td>{{ req.created_at.strftime("%Y-%m-%d %H:%M") if req.created_at else "N/A" }}</td>
+					<td>
+						{% if req.status.lower() == "draft" %}
+						{% if req.form_type|string == "1" %}
+						<form action="{{ url_for('dashboard.special_circumstance_edit', request_id=req.id) }}" method="GET" style="display:inline;">
+							<button type="submit" class="btn btn-secondary btn-sm">Update</button>
+						</form>
+
+						{% elif req.form_type|string == "2" %}
+						<form action="{{ url_for('dashboard.course_drop_edit', request_id=req.id) }}" method="GET" style="display:inline;">
+							<button type="submit" class="btn btn-secondary btn-sm">Update</button>
+						</form>
+
+						{% endif %}
+						{% endif %}
+						<form action="{{ url_for('dashboard.delete_form', request_id=req.id) }}" method="POST" style="display:inline;">
+							<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this request?');">Delete</button>
+						</form>
+						<form action="{{ url_for('dashboard.view_pdf', request_id=req.id) }}" method="GET" style="display:inline;">
+							<button type="submit" class="btn btn-secondary btn-sm">View PDF</button>
+						</form>
+
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	{% else %}
+	<p>You have not submitted any academic requests.</p>
+	{% endif %}
+</div>
+{% endblock %}

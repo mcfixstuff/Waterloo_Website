@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Request Details{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2>Request ID: {{ request.id }}</h2>
+    <p><strong>Student Email:</strong> {{ request.email }}</p>
+    <p><strong>Form Type:</strong> 
+        {% if request.form_type|string == "1" %}
+            Special Circumstance
+        {% elif request.form_type|string == "2" %}
+            Instructor-Initiated Drop
+        {% else %}
+            Unknown
+        {% endif %}
+    </p>
+    <p><strong>Status:</strong> {{ request.status.replace("_", " ").title() }}</p>
+    <p><strong>Submitted On:</strong> {{ request.created_at.strftime("%Y-%m-%d %H:%M") if request.created_at else "N/A" }}</p>
+    <hr>
+
+    <!-- Display form data in a more readable format -->
+    <h3>Submitted Data:</h3>
+    <table class="table">
+        <tbody>
+            {% for key, value in form_data.items() %}
+                {% if key != 'signature' and key != 'signature_image_path' %}
+                    <tr>
+                        <th>{{ key.replace('_', ' ').title() }}</th>
+                        <td>{{ value }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Display signature if available -->
+    {% if form_data.signature_image_path %}
+    <div class="signature-container">
+        <h4>Signature:</h4>
+        <img src="{{ form_data.signature_image_path }}" alt="Signature" style="max-width: 300px; border: 1px solid #ccc; padding: 5px;">
+    </div>
+    {% else %}
+    <p><em>No signature provided.</em></p>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ url_for('admin.review_requests') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ url_for('admin.view_pdf', request_id=request.id) }}" class="btn btn-primary" target="_blank">View PDF</a>
+    </div>
+</div>
+{% endblock %}

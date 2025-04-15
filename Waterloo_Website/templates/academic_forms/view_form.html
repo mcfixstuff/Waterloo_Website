@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Preview</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">
+                {% if form.form_type == 1 %}
+                    Special Circumstance Form
+                {% elif form.form_type == 2 %}
+                    Course Drop Form
+                {% else %}
+                    Unknown Form Type
+                {% endif %}
+            </h3>
+            <span class="badge {% if form.status == 'draft' %}bg-secondary{% elif form.status == 'under_review' %}bg-warning{% elif form.status == 'approved' %}bg-success{% elif form.status == 'rejected' %}bg-danger{% else %}bg-info{% endif %} fs-6">
+                {% if form.status == 'draft' %}
+                    Draft
+                {% elif form.status == 'under_review' %}
+                    Pending Approval
+                {% elif form.status == 'approved' %}
+                    Approved
+                {% elif form.status == 'rejected' %}
+                    Returned for Revision
+                {% else %}
+                    {{ form.status|default:"Unknown" }}
+                {% endif %}
+            </span>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-4">Student Name</dt>
+                <dd class="col-sm-8">{{ form.data.student_name }}</dd>
+
+                <dt class="col-sm-4">Student ID</dt>
+                <dd class="col-sm-8">{{ form.data.student_id }}</dd>
+
+                {% if form.form_type == 1 %}
+                    <dt class="col-sm-4">Degree</dt>
+                    <dd class="col-sm-8">{{ form.data.degree }}</dd>
+
+                    <dt class="col-sm-4">Graduation Date</dt>
+                    <dd class="col-sm-8">{{ form.data.graduation_date }}</dd>
+
+                    <dt class="col-sm-4">Request Type</dt>
+                    <dd class="col-sm-8">{{ form.data.special_request_option }}</dd>
+
+                    {% if form.data.special_request_option == "Other" %}
+                        <dt class="col-sm-4">Other Details</dt>
+                        <dd class="col-sm-8">{{ form.data.other_option_detail }}</dd>
+                    {% endif %}
+
+                    <dt class="col-sm-4">Justification</dt>
+                    <dd class="col-sm-8">{{ form.data.justification|linebreaksbr }}</dd>
+
+                {% elif form.form_type == 2 %}
+                    <dt class="col-sm-4">Semester</dt>
+                    <dd class="col-sm-8">{{ form.data.semester }}</dd>
+
+                    <dt class="col-sm-4">Year</dt>
+                    <dd class="col-sm-8">{{ form.data.year }}</dd>
+
+                    <dt class="col-sm-4">Subject</dt>
+                    <dd class="col-sm-8">{{ form.data.subject }}</dd>
+
+                    <dt class="col-sm-4">Catalog Number</dt>
+                    <dd class="col-sm-8">{{ form.data.catalog_number }}</dd>
+
+                    <dt class="col-sm-4">Class Number</dt>
+                    <dd class="col-sm-8">{{ form.data.class_number }}</dd>
+                {% endif %}
+
+                <dt class="col-sm-4">Date</dt>
+                <dd class="col-sm-8">{{ form.data.date }}</dd>
+
+                <dt class="col-sm-4">Signature</dt>
+                <dd class="col-sm-8">
+                    {% if form.data.signature %}
+                        <img src="data:image/png;base64,{{ form.data.signature }}" alt="Signature" class="img-fluid" style="max-height: 100px;">
+                    {% else %}
+                        No signature available.
+                    {% endif %}
+                </dd>
+            </dl>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'Applications' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Applications
+                </a>
+                <div>
+                    {% if form.status == 'draft' or form.status == 'rejected' %}
+                    <a href="{% url 'edit_form' form.id %}" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Edit Form
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

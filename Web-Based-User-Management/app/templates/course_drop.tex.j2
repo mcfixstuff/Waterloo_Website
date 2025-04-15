@@ -1,0 +1,30 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{hyperref}
+
+\begin{document}
+\title{Instructor Initiated Drop Form}
+\author{ {{ request_data.student_name }} }
+\date{{ request_data.created_at.strftime("%Y-%m-%d") if request_data.created_at else "" }}
+\maketitle
+
+\section*{Special Request Details}
+\begin{tabular}{ll}
+\textbf{Student ID:} & {{ request_data.student_id }} \\
+\textbf{Semester:} & {{ request_data.semester }} \\
+\textbf{Year:} & {{ request_data.year }} \\
+\textbf{Subject:} & {{ request_data.subject }} \\
+\textbf{Catalog Number:} & {{ request_data.catalog_number }} \\
+\textbf{Class Number:} & {{ request_data.class_number }} \\
+\end{tabular}
+
+\section*{Signature}
+{% if request_data.signature_image_filename %}
+\includegraphics[width=0.5\textwidth]{ {{ request_data.signature_image_filename }} }
+{% else %}
+No signature provided.
+{% endif %}
+
+\end{document}

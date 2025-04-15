@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Review Requests{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+	<h2>Review Submitted Requests</h2>
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Student</th>
+				<th>Form Type</th>
+				<th>Status</th>
+				<th>Submitted On</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for req in requests %}
+			<tr>
+				<td>{{ req.id }}</td>
+				<td>{{ req.email }}</td>
+				<td>{{ "Special Circumstance" if req.form_type|string == "1" else "Instructor Drop" }}</td>
+				<td>
+					{% if req.status == 'approved' %}
+					<span style="color: green; font-weight: bold;">Approved</span>
+					{% elif req.status == 'rejected' %}
+					<span style="color: red; font-weight: bold;">Rejected</span>
+					{% elif req.status == 'under_review' %}
+					<span style="color: orange; font-weight: bold;">Under Review</span>
+					{% else %}
+					<span style="color: #17a2b8; font-weight: bold;">{{ req.status.title() }}</span>  {# For 'draft' or fallback #}
+					{% endif %}
+				</td>
+
+				<td>{{ req.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+				<td>
+					<form action="{{ url_for('admin.view_pdf', request_id=req.id) }}" method="GET" style="display:inline;">
+						<button type="submit" class="btn btn-secondary btn-sm">View PDF</button>
+					</form>
+
+					<form action="{{ url_for('admin.approve_request', request_id=req.id) }}" method="POST" style="display:inline;">
+						<button type="submit" class="btn btn-success btn-sm">Approve</button>
+					</form>
+					<form action="{{ url_for('admin.reject_request', request_id=req.id) }}" method="POST" style="display:inline;">
+						<button type="submit" class="btn btn-danger btn-sm">Reject</button>
+					</form>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}

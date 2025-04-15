@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+	<h2>Welcome, {{ session['user'] }}!</h2>
+	<p><strong>Email:</strong> {{ session['email'] }}</p>
+	<p><strong>Role:</strong> {{ session['role'] }}</p>
+
+	<h2>Admin Dashboard</h2>
+	<p>Manage users/roles and review requests below.</p>
+	
+	<div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 20px;">
+		<!-- add user button -->
+		<form>
+			<button type="button" id="toggle-add-user" class="btn btn-success">Manage Users and Roles</button>
+		</form>
+
+		<!-- review submitted requests button -->
+		<form action="{{ url_for('admin.review_requests') }}" method="GET">
+			<button type="submit" class="btn btn-success">Review Submitted Requests</button>
+		</form>
+	</div>
+	
+	
+	
+
+	<!-- Hidden Add User Form -->
+	<div id="add-user-form" style="display: none; margin-top: 20px;">
+		<h3>Add New User</h3>
+		<form action="{{ url_for('admin.create_user') }}" method="POST">
+			<div>
+				<label for="display_name">Name:</label>
+				<input type="text" id="display_name" name="display_name" required>
+			</div>
+			<div>
+				<label for="email">Email:</label>
+				<input type="email" id="email" name="email" required>
+			</div>
+			<div>
+				<label for="role">Role:</label>
+				<select id="role" name="role" required>
+					<option value="User">User</option>
+					<option value="Admin">Admin</option>
+				</select>
+			</div>
+			<div>
+				<label for="status">Status:</label>
+				<select id="status" name="status" required>
+					<option value="active">Active</option>
+					<option value="inactive">Inactive</option>
+				</select>
+			</div>
+			<button type="submit" class="btn btn-primary">Submit</button>
+		</form>
+	</div>
+
+	<table class="user-table">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Email</th>
+				<th>Role</th>
+				<th>Status</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody id="user-list">
+			{% for user in users %}
+			<tr>
+				<td>{{ user.user_id }}</td>
+				<td>{{ user.display_name }}</td>
+				<td>{{ user.email }}</td>
+				<td>{{ user.role }}</td>
+				<td>{{ user.status }}</td>
+				<td>
+					<form action="{{ url_for('admin.update_user', user_id=user.user_id) }}" method="GET" style="display:inline;">
+						<button type="submit" class="btn btn-primary">Update</button>
+					</form>
+					<form action="{{ url_for('admin.delete_user', user_id=user.user_id) }}" method="POST" style="display:inline;">
+						<button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this user?');">Delete</button>
+					</form>
+				</td>
+			</tr>
+			{% else %}
+			<tr>
+				<td colspan="6">No users found.</td>
+			</tr>
+			{% endfor %}
+			<!-- Users will be dynamically inserted here -->
+		</tbody>
+	</table>
+</div>
+
+<script src="{{ url_for('static', filename='admin.js') }}"></script>
+{% endblock %}

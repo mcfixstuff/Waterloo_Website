@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Home - User Management{% endblock %}
+
+{% block content %}
+<section class="home-container" aria-labelledby="home-heading">
+    <h1 id="home-heading">Welcome to the User Management System</h1>
+    <p class="home-description">
+        Manage your users with ease. Submit forms, track requests, and collaborate — all in one secure platform.
+    </p>
+
+    <div class="home-features">
+        <h2>Key Features</h2>
+        <ul style="list-style-type: none; padding: 0;">
+            <li><strong>User Management:</strong> Add, edit, or remove users in seconds.</li>
+            <li><strong>Role-Based Access:</strong> Admins and users see only what they need.</li>
+            <li><strong>Secure Login:</strong> Microsoft OAuth integration keeps it safe.</li>
+            <li><strong>PDF Generation:</strong> Automatically generate clean, professional forms.</li>
+        </ul>
+    </div>
+
+    <div class="tech-stack">
+        <h2>Built With</h2>
+        <ul>
+            <li>Flask (Python)</li>
+            <li>Docker + PostgreSQL</li>
+            <li>Microsoft OAuth (Graph API)</li>
+            <li>LaTeX for PDF generation</li>
+        </ul>
+    </div>
+
+    <div class="contributors">
+        <h2>Contributors</h2>
+        <div class="avatar-row">
+            <a href="https://github.com/sunnySKL" target="_blank">
+                <img src="https://github.com/sunnySKL.png" alt="Hung Liu" class="avatar">
+                <p>Hung Liu</p>
+            </a>
+            <a href="https://github.com/p1ckl" target="_blank">
+                <img src="https://github.com/p1ckl.png" alt="Egemen Erkin" class="avatar">
+                <p>Egemen Senvardarli</p>
+            </a>
+            <a href="https://github.com/your-teammate1" target="_blank">
+                <img src="https://github.com/your-teammate1.png" alt="Ash Elsaadi" class="avatar">
+                <p>Ash Elsaadi</p>
+            </a>
+        </div>
+    </div>
+
+   
+
+    <footer>
+        <p>© 2025 Web-Based User Management • COSC 4353 Group Project</p>
+    </footer>
+</section>
+{% endblock %}

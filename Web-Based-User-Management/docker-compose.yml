@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  web:
+    env_file:
+      - .env
+    build: .
+    ports:
+      - "7070:5000"
+    environment:
+      FLASK_APP: run.py
+      FLASK_ENV: development
+      FLASK_RUN_HOST: "0.0.0.0"
+      # Configure the database URL to point to the db container.
+      DATABASE_URL: 'postgresql://flaskuser:flaskpass@db/flaskdb'
+      # Optionally, add other environment variables (e.g., CLIENT_ID, CLIENT_SECRET, etc.)
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      # Persist changes if necessary (e.g., logs, uploaded files, etc.)
+
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: flaskuser
+      POSTGRES_PASSWORD: flaskpass
+      POSTGRES_DB: flaskdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

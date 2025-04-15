@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Login - User Management{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h2>Login</h2>
+    <a href="{{ url_for('auth.microsoft_login') }}" class="ms-login-btn">Login with Microsoft</a>
+
+    <!-- Register prompt/ not working atm - can implement later if needed -->
+    <p style="margin-top: 20px;">Don’t have an account?
+        <a href="{{ url_for('auth.register') }}">Register here</a>
+    </p>
+</div>
+{% endblock %}

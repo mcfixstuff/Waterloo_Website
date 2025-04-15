@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Instructor-Initiated Drop Form{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Instructor-Initiated Drop Form</h1>
+    
+    <form action="{{ url_for('dashboard.course_drop') }}" method="POST" enctype="multipart/form-data">
+        <!-- Student Information -->
+		<div>
+			<label for="student_name">Student Name:</label>
+			<!-- if student in session -->
+			<input type="text" id="student_name" name="student_name" value="{{ session['user'] }}" required>
+		</div>
+        <div>
+            <label for="student_id">Student ID (PeopleSoft ID):</label>
+            <input type="text" id="student_id" name="student_id" placeholder="Enter your PeopleSoft ID" required>
+        </div>
+
+        <!-- Semester Selection -->
+        <div>
+            <label for="semester">Semester:</label>
+            <select id="semester" name="semester" required>
+                <option value="">Select Semester</option>
+                <option value="Spring">Spring</option>
+                <option value="Summer">Summer</option>
+                <option value="Fall">Fall</option>
+            </select>
+        </div>
+        <div>
+            <label for="year">Year (Last Two Digits):</label>
+            <input type="text" id="year" name="year" placeholder="YY" maxlength="2" required>
+        </div>
+
+        <!-- Course Information -->
+        <div>
+            <label for="subject">Subject Code:</label>
+            <input type="text" id="subject" name="subject" placeholder="e.g., COSC" required>
+        </div>
+        <div>
+            <label for="catalog_number">Course Catalog Number:</label>
+            <input type="text" id="catalog_number" name="catalog_number" placeholder="e.g., 1010" required>
+        </div>
+        <div>
+            <label for="class_number">Class Number:</label>
+            <input type="text" id="class_number" name="class_number" placeholder="e.g., 12345" required>
+        </div>
+
+        <!-- instructor/student sig -->
+        <div>
+            <label for="signature">Instructor Signature (Upload an image file):</label>
+            <input type="file" id="signature" name="signature" accept="image/*" required>
+        </div>
+
+        <!-- Submission Date AUTO -->
+        <div>
+            <label for="date">Submission Date:</label>
+            <input type="text" id="date" name="date" value="{{ current_date }}" readonly>
+        </div>
+
+        <div>
+            <button type="submit" name="action" value="save_draft" class="btn btn-secondary">Save Draft</button>
+            <button type="submit" name="action" value="submit" class="btn btn-primary">Submit Request</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

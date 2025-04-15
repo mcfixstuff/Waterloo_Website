@@ -1,0 +1,36 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{hyperref}
+
+\begin{document}
+\title{Special Request Form}
+\author{ {{ request_data.student_name }} }
+\date{{ request_data.created_at.strftime("%Y-%m-%d") if request_data.created_at else "" }}
+\maketitle
+
+\section*{Student Information}
+\begin{tabular}{ll}
+\textbf{Student ID:} & {{ request_data.student_id }} \\
+\textbf{Degree:} & {{ request_data.degree }} \\
+\textbf{Graduation Date:} & {{ request_data.graduation_date }} \\
+\end{tabular}
+
+\section*{Special Request Details}
+\begin{tabular}{ll}
+\textbf{Special Request Option:} & {{ request_data.special_request_option }} \\
+{% if request_data.special_request_option == "Other" %}
+\textbf{Other Details:} & {{ request_data.other_option_detail }} \\
+{% endif %}
+\textbf{Justification:} & {{ request_data.justification }} \\
+\end{tabular}
+
+\section*{Signature}
+{% if request_data.signature_image_filename %}
+\includegraphics[width=0.5\textwidth]{ {{ request_data.signature_image_filename }} }
+{% else %}
+No signature provided.
+{% endif %}
+
+\end{document}
