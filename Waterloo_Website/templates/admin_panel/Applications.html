@@ -52,33 +52,43 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
-        <!-- User Info & Signature -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="h5 mb-0">User Information</h3>
-                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#signatureModal">
-                    <i class="fas fa-signature"></i> Manage Signature
-                </button>
+<!-- User Info & Signature -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="h5 mb-0">User Information</h3>
+        <div>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#signatureModal">
+                <i class="fas fa-signature"></i> Manage Signature
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-9">
+                <p><strong>Name:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Role:</strong> <span class="badge bg-primary">{{ user.role }}</span></p>
+                <p>
+                    <strong>Cougar ID:</strong> 
+                    {% if user.cougar_id %}
+                        <span class="badge bg-success">{{ user.cougar_id }}</span>
+                    {% else %}
+                        <span class="badge bg-warning">Not set</span>
+                    {% endif %}
+                </p>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-9">
-                        <p><strong>Name:</strong> {{ user.username }}</p>
-                        <p><strong>Email:</strong> {{ user.email }}</p>
-                        <p><strong>Role:</strong> <span class="badge bg-primary">{{ user.role }}</span></p>
-                    </div>
-                    <div class="col-md-3 text-center">
-                        <div class="border p-3 mb-2">
-                            {% if user.signature_image %}
-                                <img src="{{ user.signature_image.url }}" alt="Your signature" class="img-fluid" style="max-height: 100px;">
-                            {% else %}
-                                <p class="text-muted">No signature</p>
-                            {% endif %}
-                        </div>
-                    </div>
+            <div class="col-md-3 text-center">
+                <div class="border p-3 mb-2">
+                    {% if user.signature_image %}
+                        <img src="{{ user.signature_image.url }}" alt="Your signature" class="img-fluid" style="max-height: 100px;">
+                    {% else %}
+                        <p class="text-muted">No signature</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
         <!-- My Applications -->
         <div class="card">
@@ -324,39 +334,141 @@
         </div>
     </div>
 
+
+
+ <!-- Cougar ID Verification Modal -->
+<div class="modal fade" id="cougarIdModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="cougarIdModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cougarIdModalLabel">Verify Your Cougar ID</h5>
+                <!-- Remove close button to prevent closing without entering ID -->
+            </div>
+            <div class="modal-body d-flex justify-content-center align-items-center" style="height: 100vh; padding: 0;">
+                <div class="w-100" style="max-width: 400px; padding: 2rem;">
+                    <!-- Logo at the top -->
+                    <div class="text-center mb-4">
+                        <img src="https://www.uh.edu/af-university-services/cougarcard/_images/resident-icons/cougar-card-icon.png" alt="Waterloo Logo" class="img-fluid" style="max-height: 80px;">
+                    </div>
+            
+                    <form id="cougarIdForm" method="post" action="{% url 'verify_cougar_id' %}">
+                        {% csrf_token %}
+                        <h3 class="text-center mb-4">Cougar ID Verification</h3>
+            
+                        <div class="mb-3">
+                            <label for="cougarId" class="form-label">
+                                {% if user.cougar_id %}
+                                    Please re-enter your 7-digit Cougar ID to verify
+                                {% else %}
+                                    Please enter your 7-digit Cougar ID for the first time
+                                {% endif %}
+                            </label>
+                            <input type="text" class="form-control" id="cougarId" name="cougar_id" 
+                                   required pattern="[0-9]{7}" maxlength="7">
+                            <div class="form-text">
+                                {% if user.cougar_id %}
+                                    We found a Cougar ID on your account. Please verify it to continue.
+                                {% else %}
+                                    This will be saved as your Cougar ID for future logins.
+                                {% endif %}
+                            </div>
+                            <div class="invalid-feedback">
+                                Please enter a valid 7-digit Cougar ID.
+                            </div>
+                        </div>
+            
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                {% if user.cougar_id %}Verify{% else %}Save & Continue{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+                  
+        </div>
+    </div>
+</div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Add JavaScript to check for signature -->
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get reference to button and create modal instances
-        const checkSignatureBtn = document.getElementById('checkSignatureBtn');
-        const signatureRequiredAlert = document.getElementById('signatureRequiredAlert');
+
+
+
+
+
+
         
-        // Check if user has signature using Django template variable
-        const hasSignature = {% if user.signature_image %}true{% else %}false{% endif %};
-        
-        // Add event listener to the button
-        checkSignatureBtn.addEventListener('click', function() {
-            if (hasSignature) {
-                // Show the application modal if signature exists
-                var newApplicationModal = new bootstrap.Modal(document.getElementById('newApplicationModal'));
-                newApplicationModal.show();
-            } else {
-                // Show alert and open signature modal if no signature
-                signatureRequiredAlert.classList.remove('d-none');
+        document.addEventListener('DOMContentLoaded', function() {
+
+            
+            // Get reference to buttons and modals
+            const checkSignatureBtn = document.getElementById('checkSignatureBtn');
+            const signatureRequiredAlert = document.getElementById('signatureRequiredAlert');
+            
+            // Check if user has signature and cougar ID using Django template variables
+            const hasSignature = {% if user.signature_image %}true{% else %}false{% endif %};
+            
+            // Always show Cougar ID modal first on page load if not set
+            const isCougarVerified = {% if cougar_verified %}true{% else %}false{% endif %};
+
+            if (!isCougarVerified) {
+                var cougarIdModal = new bootstrap.Modal(document.getElementById('cougarIdModal'), {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                cougarIdModal.show();
+            }
+            
+            // Add event listener to the button
+            checkSignatureBtn.addEventListener('click', function() {
+                // First check for Cougar ID
+                if (!hasCougarId) {
+                    // Show Cougar ID modal if not set
+                    var cougarIdModal = new bootstrap.Modal(document.getElementById('cougarIdModal'), {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    cougarIdModal.show();
+                    return;
+                }
                 
-                // Scroll to the alert
-                signatureRequiredAlert.scrollIntoView({ behavior: 'smooth' });
-                
-                // Open signature modal after short delay
-                setTimeout(function() {
-                    var signatureModal = new bootstrap.Modal(document.getElementById('signatureModal'));
-                    signatureModal.show();
-                }, 1000);
+                // Then check for signature
+                if (hasSignature) {
+                    // Show the application modal if signature exists
+                    var newApplicationModal = new bootstrap.Modal(document.getElementById('newApplicationModal'));
+                    newApplicationModal.show();
+                } else {
+                    // Show alert and open signature modal if no signature
+                    signatureRequiredAlert.classList.remove('d-none');
+                    
+                    // Scroll to the alert
+                    signatureRequiredAlert.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Open signature modal after short delay
+                    setTimeout(function() {
+                        var signatureModal = new bootstrap.Modal(document.getElementById('signatureModal'));
+                        signatureModal.show();
+                    }, 1000);
+                }
+            });
+            
+            // Add validation for Cougar ID format
+            const cougarIdInput = document.getElementById('cougarId');
+            if (cougarIdInput) {
+                cougarIdInput.addEventListener('input', function() {
+                    const isValid = /^\d{7}$/.test(this.value);
+                    if (isValid) {
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                    } else {
+                        this.classList.remove('is-valid');
+                        this.classList.add('is-invalid');
+                    }
+                });
             }
         });
-    });
-    </script>
+        </script>
 </body>
 </html>

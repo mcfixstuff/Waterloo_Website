@@ -78,6 +78,7 @@ def login_view(request):
 
 def logout_view(request):
     request.session.flush()
+    request.session.pop("cougar_verified", None)
     logout_url = (
         f"https://login.microsoftonline.com/common/oauth2/v2.0/logout"
         f"?post_logout_redirect_uri={settings.MICROSOFT_AUTH['REDIRECT_URI']}"
@@ -214,7 +215,9 @@ def Applications(request):
         'user': user,
         'signature_form': signature_form,
         'applications': applications,
-        'api_forms': api_forms
+        'api_forms': api_forms,
+        'require_cougar_id': True,  # Always require Cougar ID
+        'cougar_verified': request.session.get("cougar_verified", False),
         
     }
     return render(request, "admin_panel/Applications.html", context)
@@ -922,3 +925,42 @@ def edit_texas_residency(request, app_id):
     
     # Fix: Use the correct template path (update this to match your actual template location)
     return render(request, "Texas_Residency_Affidavit_Form.html", context)
+
+
+
+def verify_cougar_id(request):
+    if "access_token" not in request.session:
+        return redirect("login")
+
+    email = request.session.get("user_email")
+    if not email:
+        return redirect("login")
+
+    user = get_object_or_404(User, email=email)
+
+    if request.method == "POST":
+        entered = request.POST.get("cougar_id", "").strip()
+
+        if not (entered.isdigit() and len(entered) == 7):
+            messages.error(request, "Cougar‑ID must be exactly 7 digits.")
+            return redirect("Applications")
+
+        if user.cougar_id:
+            # Already set → just compare
+            if entered == user.cougar_id:
+                print("good")
+                request.session["cougar_verified"] = True
+                messages.success(request, "Cougar‑ID verified ✔")
+                
+            else:
+                
+                messages.error(request, "Cougar‑ID doesn’t match our records.")
+                print("not ")
+        else:
+            # First time → persist it
+            user.cougar_id = entered
+            user.save(update_fields=["cougar_id"])
+            request.session["cougar_verified"] = True 
+            messages.success(request, "Cougar‑ID saved and verified ✔")
+
+    return redirect("Applications")

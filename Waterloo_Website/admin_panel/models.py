@@ -9,6 +9,7 @@ class User(models.Model):
     role = models.CharField(max_length=50, default="basicuser")
     status = models.BooleanField(default=True)
     signature_image = models.ImageField(upload_to='signatures/', null=True, blank=True)
+    cougar_id = models.CharField(max_length=7, null=True, blank=True)  # Add this line
 
     def save(self, *args, **kwargs):
         # Check if this is an existing instance and if signature_image has changed
