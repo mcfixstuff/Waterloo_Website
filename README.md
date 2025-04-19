@@ -2,7 +2,7 @@
 
 ## 🚀 To Run 
 
-just run each docker file from waterloo and toronto 
+just run each docker file from waterloo and toronto
 
 then 
 
