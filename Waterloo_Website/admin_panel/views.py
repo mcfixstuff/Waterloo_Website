@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.db.models import Q
 
 # App-specific imports
-from admin_panel.models import User, Application, FERPAForm, TexasResidencyAffidavit
+from admin_panel.models import User, Application, FERPAForm, TexasResidencyAffidavit,Department
 from .forms import UserSignatureForm
 
 # Third-party imports
@@ -153,7 +153,7 @@ def change_user_role(request, user_id):
     if user.role == "superuser" and new_role != "superuser":
         return HttpResponseForbidden("You cannot demote a superuser.")
 
-    if new_role in ["superuser", "manager", "basicuser"]:
+    if new_role in ["superuser", "manager", "basicuser", "approver"]:
         user.role = new_role
         user.save()
 
@@ -224,7 +224,7 @@ def Applications(request):
 
 
 def ApplicationApprovals(request):
-    """Render the ApplicationApprovals view with permission check."""
+    """Render the ApplicationApprovals view with department-level filtering for managers/approvers."""
     if "access_token" not in request.session:
         return redirect("login")
 
@@ -233,40 +233,44 @@ def ApplicationApprovals(request):
         return redirect("login")
 
     current_user = User.objects.filter(email=email).first()
-    if not current_user or (current_user.role not in ["superuser", "manager"]):
+    if not current_user or current_user.role not in ["superuser", "manager", "aprover"]:
         return HttpResponseForbidden("You do not have permission to access this page.")
 
-    pending_count = Application.objects.filter(status='pending').count()
-    approved_count = Application.objects.filter(status='approved').count()
-    returned_count = Application.objects.filter(status='returned').count()
+    # If manager or approver → filter by their department
+    if current_user.role in ["manager", "aprover"] and current_user.department:
+        dept_filter = {'department': current_user.department}
+    else:
+        dept_filter = {}
+        
+        
+    
 
-    today = timezone.now().date()
-    today_count = Application.objects.filter(submitted_at__date=today).count()
+    pending_forms = Application.objects.filter(status='pending', **dept_filter).order_by('-created_at')
+    approved_count = Application.objects.filter(status='approved', **dept_filter).count()
+    returned_count = Application.objects.filter(status='returned', **dept_filter).count()
+    today_count = Application.objects.filter(submitted_at__date=timezone.now().date(), **dept_filter).count()
 
-    pending_forms = Application.objects.filter(status='pending').order_by('-created_at')
     recent_forms = Application.objects.filter(
-        status__in=["approved", "returned"]
+        status__in=["approved", "returned"], **dept_filter
     ).order_by('-reviewed_at', '-updated_at')[:5]
-    
-         # Get API-based forms
-    api_forms = api_client.get_all_non_draft_forms()
-    
-    
-    
+
     # API forms from external system
     api_forms = api_client.get_all_forms()
-
-    # Count by status in API data
     api_pending_count = sum(1 for f in api_forms if f.get('status') == 'pending')
     api_approved_count = sum(1 for f in api_forms if f.get('status') == 'approved')
     api_returned_count = sum(1 for f in api_forms if f.get('status') == 'rejected') 
+    
+    print(current_user.department)
+    
+    for form in pending_forms:
+        print(f"Form ID: {form.id}, Department: {form.user.department}")
 
     context = {
         'active_page': 'ApplicationApprovals',
         'user': current_user,
         'pending_forms': pending_forms,
         'recent_forms': recent_forms,
-        'pending_count': pending_count,
+        'pending_count': pending_forms.count(),
         'approved_count': approved_count,
         'returned_count': returned_count,
         'today_count': today_count,
@@ -339,6 +343,7 @@ def save_ferpa_form(request):
                 application = Application.objects.create(
                     user=user,
                     type=application_type,
+                    department=Department.objects.get(code="registrar"),
                     application_name=f"New {application_type.replace('_', ' ').title()} Application",
                     status="draft"
                 )
@@ -402,10 +407,13 @@ def save_texas_affidavit_form(request):
                 application = Application.objects.create(
                     user=user,
                     type=application_type,
+                    department=Department.objects.get(code="residency"),
                     application_name=f"New {application_type.replace('_', ' ').title()} Application",
                     status='draft' if is_draft else 'pending',
                     submitted_at=None if is_draft else timezone.now()
                 )
+                
+                print(application.department)
             else:
                 try:
                     application = Application.objects.get(id=application_id, user=user)
@@ -964,3 +972,18 @@ def verify_cougar_id(request):
             messages.success(request, "Cougar‑ID saved and verified ✔")
 
     return redirect("Applications")
+
+@csrf_exempt
+def change_user_department(request, user_id):
+    if request.method == "POST":
+        user = get_object_or_404(User, id=user_id)
+        dept_code = request.POST.get("new_department")
+        department = Department.objects.filter(code=dept_code).first()
+        user.department = department
+        print("Submitted code:", dept_code)
+        print("Department found:", department)
+
+        user.save()
+        
+        
+    return redirect("admin_dashboard")

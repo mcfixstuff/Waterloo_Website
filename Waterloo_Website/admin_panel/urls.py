@@ -38,5 +38,8 @@ urlpatterns = [
     
     # cougar
     path("verify-cougar-id/", views.verify_cougar_id, name="verify_cougar_id"),
+    
+    #v4
+    path('change-department/<int:user_id>/', views.change_user_department, name='change_user_department'),
 
 ]

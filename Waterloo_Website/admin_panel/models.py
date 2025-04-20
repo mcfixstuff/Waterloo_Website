@@ -10,6 +10,7 @@ class User(models.Model):
     status = models.BooleanField(default=True)
     signature_image = models.ImageField(upload_to='signatures/', null=True, blank=True)
     cougar_id = models.CharField(max_length=7, null=True, blank=True)  # Add this line
+    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
 
     def save(self, *args, **kwargs):
         # Check if this is an existing instance and if signature_image has changed
@@ -28,11 +29,18 @@ class User(models.Model):
     
     def __str__(self):
         return f"{self.username} ({self.role}) - {'Active' if self.status else 'Disabled'}"
+    
+class Department(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=20, unique=True)
 
+    def __str__(self):
+        return self.name
 
 class Application(models.Model):
     # Link to User model
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     
     # Application type
     TYPE_CHOICES = [
@@ -192,3 +200,6 @@ class TexasResidencyAffidavit(models.Model):
                 self.application.application_name = f"Texas Residency Affidavit - {self.full_name}"
                 self.application.save()
         super().save(*args, **kwargs)
+        
+        
+        

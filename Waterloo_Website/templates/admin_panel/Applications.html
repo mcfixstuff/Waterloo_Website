@@ -413,6 +413,8 @@
             // Always show Cougar ID modal first on page load if not set
             const isCougarVerified = {% if cougar_verified %}true{% else %}false{% endif %};
 
+            const hasCougarId = {% if user.cougar_id %}true{% else %}false{% endif %};
+
             if (!isCougarVerified) {
                 var cougarIdModal = new bootstrap.Modal(document.getElementById('cougarIdModal'), {
                     backdrop: 'static',
