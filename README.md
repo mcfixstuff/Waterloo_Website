@@ -12,6 +12,9 @@ Then open:
 
 ## 📸 Screenshots
 
+### ER diagram
+![1](shots/0.png)
+
 ### 1
 ![1](shots/1.png)
 
