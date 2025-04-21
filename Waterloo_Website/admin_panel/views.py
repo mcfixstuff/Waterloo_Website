@@ -144,9 +144,11 @@ def admin_dashboard(request):
 
 ############## END OF admin_dashboard FUNCTION #########################
 
-# User Management Views
+################ START OF toggle_user_status FUNCTION ####################
+# This function toggles whether a user's account is enabled or disabled.
+# It can only be accessed by a logged-in user with the "superuser" role.
+########################################################################
 def toggle_user_status(request, user_id):
-    """Toggle user active/inactive status (superuser only)."""
     if "access_token" not in request.session:
         return redirect("login")
 
@@ -163,10 +165,14 @@ def toggle_user_status(request, user_id):
     user.save()
 
     return redirect("admin_dashboard")
+############## END OF toggle_user_status FUNCTION #########################
 
 
+################ START OF change_user_role FUNCTION ####################
+# This function allows a superuser to update another user's role. It also
+# ensures that a superuser cannot be demoted by mistake or malicious intent.
+########################################################################
 def change_user_role(request, user_id):
-    """Change user role (superuser only)."""
     if "access_token" not in request.session:
         return redirect("login")
 
@@ -185,11 +191,14 @@ def change_user_role(request, user_id):
         user.save()
 
     return redirect("admin_dashboard")
+############## END OF change_user_role FUNCTION #########################
 
 
-# Signature and Application Views
+################ START OF upload_signature FUNCTION ####################
+# This function lets the logged-in user upload a signature image. It displays
+# the form on GET and saves the image on POST. Only works if the user is logged in.
+########################################################################
 def upload_signature(request):
-    """Handle user signature upload."""
     if "access_token" not in request.session:
         return redirect("login")
 
@@ -213,6 +222,7 @@ def upload_signature(request):
         'signature_form': form
     }
     return render(request, "admin_panel/Applications.html", context)
+############## END OF upload_signature FUNCTION #########################
 
 
 def Applications(request):
