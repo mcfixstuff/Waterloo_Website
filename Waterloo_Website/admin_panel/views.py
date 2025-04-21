@@ -329,8 +329,14 @@ def ApplicationApprovals(request):
     return render(request, "admin_panel/ApplicationApprovalsDashboard.html", context)
 ############## END OF ApplicationApprovals FUNCTION #########################
 
+...
+
+################ START OF select_form_type FUNCTION ####################
+# Handles form type selection by the user. Depending on the selected
+# form, it sets a session variable and redirects to the corresponding
+# form view without immediately creating an application.
+########################################################################
 def select_form_type(request):
-    """Handle form type selection from the modal without creating a draft record immediately."""
     if "access_token" not in request.session:
         return redirect("login")
 
@@ -356,19 +362,22 @@ def select_form_type(request):
                 context = {'user': user, 'active_page': 'Applications'}
                 return render(request, 'Texas_Residency_Affidavit_Form.html', context)
         elif form_type == 'special_circumstance':
-            # Redirect to the special circumstance form
             return redirect('new_special_circumstance_form')
         elif form_type == 'course_drop':
-            # Redirect to the course drop form
             return redirect('new_course_drop_form')
         else:
             messages.error(request, "Invalid form type selected")
 
     return redirect('Applications')
+############## END OF select_form_type FUNCTION #########################
 
 
+################ START OF save_ferpa_form FUNCTION ####################
+# Saves the FERPA Authorization form. Creates or updates the associated
+# Application and FERPAForm models, depending on whether this is a draft
+# or a final submission.
+########################################################################
 def save_ferpa_form(request):
-    """Save FERPA form data, creating an Application only when explicitly saved."""
     if "access_token" not in request.session:
         return redirect("login")
 
@@ -390,7 +399,6 @@ def save_ferpa_form(request):
                     messages.error(request, "Form type not found. Please try again.")
                     return redirect('Applications')
 
-                # Get dynamic department from ApprovalRule
                 rule = ApprovalRule.objects.filter(form_type=application_type).first()
                 assigned_dept = rule.departments_required.first() if rule else None
 
@@ -432,6 +440,7 @@ def save_ferpa_form(request):
             messages.success(request, "FERPA Authorization saved successfully.")
 
     return redirect('Applications')
+############## END OF save_ferpa_form FUNCTION #########################
 
 
 def save_texas_affidavit_form(request):
