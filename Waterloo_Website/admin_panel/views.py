@@ -20,15 +20,22 @@ import os
 import msal
 from shutil import copyfile
 
-# From academic_froms
+# From academic_forms
 from academic_forms import api_client
 
-
-# Authentication Views
+################ START OF show_login_page FUNCTION ####################
+# This function renders the login page for the admin panel. It is the
+# default view shown to users trying to access the login route.
+########################################################################
 def show_login_page(request):
     return render(request, "admin_panel/login.html")
+############## END OF show_login_page FUNCTION #########################
 
 
+################ START OF trigger_microsoft_login FUNCTION ####################
+# This function initiates the Microsoft OAuth2 login by building the auth URL
+# and redirecting the user to the Microsoft login page.
+########################################################################
 @csrf_exempt
 def trigger_microsoft_login(request):
     auth_url = (
@@ -41,8 +48,14 @@ def trigger_microsoft_login(request):
         f"&prompt=select_account"
     )
     return redirect(auth_url)
+############## END OF trigger_microsoft_login FUNCTION #########################
 
 
+################ START OF login_view FUNCTION ####################
+# This function handles the redirect after Microsoft login. It retrieves the 
+# access token using the authorization code and fetches user info from Graph API.
+# It then either creates a new user or logs the existing one in.
+########################################################################
 def login_view(request):
     if "code" in request.GET:
         auth_code = request.GET["code"]
@@ -74,8 +87,13 @@ def login_view(request):
             request.session["user_email"] = user_info.get("mail")
             return redirect("admin_dashboard")
     return redirect("login")
+############## END OF login_view FUNCTION #########################
 
 
+################ START OF logout_view FUNCTION ####################
+# Logs out the current user by clearing the session and redirecting them
+# to the login page using Microsoft's logout endpoint.
+########################################################################
 def logout_view(request):
     request.session.flush()
     request.session.pop("cougar_verified", None)
@@ -84,21 +102,23 @@ def logout_view(request):
         f"?post_logout_redirect_uri={settings.MICROSOFT_AUTH['REDIRECT_URI']}"
     )
     return redirect('login')
+############## END OF logout_view FUNCTION #########################
 
 
-# Dashboard Views
+################ START OF admin_dashboard FUNCTION ####################
+# This function loads the admin dashboard view. It uses the current user's 
+# session to retrieve their info and display user management tools and 
+# approval rules. Only accessible by managers or superusers.
+########################################################################
 def admin_dashboard(request):
-    """Render the admin dashboard with user management interface."""
     access_token = request.session.get("access_token")
     if not access_token:
         return redirect("login")
-    
-  
 
     headers = {"Authorization": f"Bearer {access_token}"}
     user_info = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers).json()
     current_user = User.objects.filter(email=user_info.get("mail")).first()
-    
+
     if current_user and current_user.role == "basicuser":
         return redirect("Applications")
 
@@ -122,6 +142,7 @@ def admin_dashboard(request):
         "approval_rules": ApprovalRule.objects.all(),
     })
 
+############## END OF admin_dashboard FUNCTION #########################
 
 # User Management Views
 def toggle_user_status(request, user_id):
