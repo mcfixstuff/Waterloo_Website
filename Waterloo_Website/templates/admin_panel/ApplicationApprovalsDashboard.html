@@ -1,3 +1,4 @@
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -105,6 +106,7 @@
                                 <th>Form Type</th>
                                 <th>Submitted By</th>
                                 <th>Submission Date</th>
+                                <th>Departments</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -121,6 +123,17 @@
                                             <span class="text-muted">Not submitted</span>
                                         {% endif %}
                                     </td>
+                                    <td>
+                                        <td>
+                                            <small class="text-muted">
+                                              Remaining:
+                                              {% if remaining_approvals|get_item:form.id %}
+                                                  {{ remaining_approvals|get_item:form.id|join:", " }}
+                                              {% else %}
+                                                  None
+                                              {% endif %}
+                                            </small>
+                                          </td>
                                     <td>
                                         <div class="btn-group">
                                             <!-- Preview button -->

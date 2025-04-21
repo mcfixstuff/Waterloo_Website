@@ -17,10 +17,13 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
+                    {% if user.role == 'superuser' or user_role == 'manager' or user_role == 'approver' %}
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{% url 'admin_dashboard' %}">Dashboard</a>
                     </li>
-                    {% if user.role == 'superuser' or user.role == 'manager' %}
+                    {% endif %}
+
+                    {% if user.role == 'superuser' or user_role == 'manager' or user_role == 'approver' %}
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'ApplicationApprovals' %}active{% endif %}" href="{% url 'ApplicationApprovals' %}">Application Approvals</a>
                     </li>

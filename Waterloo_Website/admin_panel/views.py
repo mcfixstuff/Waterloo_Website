@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.db.models import Q
 
 # App-specific imports
-from admin_panel.models import User, Application, FERPAForm, TexasResidencyAffidavit,Department
+from admin_panel.models import User, Application, FERPAForm, TexasResidencyAffidavit,Department,ApprovalRule,DepartmentApproval
 from .forms import UserSignatureForm
 
 # Third-party imports
@@ -92,10 +92,15 @@ def admin_dashboard(request):
     access_token = request.session.get("access_token")
     if not access_token:
         return redirect("login")
+    
+  
 
     headers = {"Authorization": f"Bearer {access_token}"}
     user_info = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers).json()
     current_user = User.objects.filter(email=user_info.get("mail")).first()
+    
+    if current_user and current_user.role == "basicuser":
+        return redirect("Applications")
 
     if current_user and not current_user.status:
         return HttpResponse("Your account has been disabled. Please contact the administrator.", status=403)
@@ -113,7 +118,8 @@ def admin_dashboard(request):
         "user_role": current_user.role if current_user else "basicuser",
         "enabled_users": enabled_users,
         "disabled_users": disabled_users,
-        "active_page": "dashboard"
+        "active_page": "dashboard",
+        "approval_rules": ApprovalRule.objects.all(),
     })
 
 
@@ -224,59 +230,82 @@ def Applications(request):
 
 
 def ApplicationApprovals(request):
-    """Render the ApplicationApprovals view with department-level filtering for managers/approvers."""
     if "access_token" not in request.session:
         return redirect("login")
 
     email = request.session.get("user_email")
-    if not email:
-        return redirect("login")
-
     current_user = User.objects.filter(email=email).first()
-    if not current_user or current_user.role not in ["superuser", "manager", "aprover"]:
+
+    if not current_user or current_user.role not in ["superuser", "manager", "approver"]:
         return HttpResponseForbidden("You do not have permission to access this page.")
 
-    # If manager or approver → filter by their department
-    if current_user.role in ["manager", "aprover"] and current_user.department:
-        dept_filter = {'department': current_user.department}
-    else:
-        dept_filter = {}
-        
-        
-    
+    # 🧠 Superuser sees all pending forms
+    if current_user.role == "superuser":
+        pending_forms = Application.objects.filter(status="pending").order_by("-created_at")
 
-    pending_forms = Application.objects.filter(status='pending', **dept_filter).order_by('-created_at')
-    approved_count = Application.objects.filter(status='approved', **dept_filter).count()
-    returned_count = Application.objects.filter(status='returned', **dept_filter).count()
-    today_count = Application.objects.filter(submitted_at__date=timezone.now().date(), **dept_filter).count()
+    # 👥 Manager/Approver sees only those requiring their department
+    else:
+        dept = current_user.department
+
+        # Get all form types where this department is required
+        rules = ApprovalRule.objects.filter(departments_required=dept)
+        form_types = [rule.form_type for rule in rules]
+
+        # Get applications of those form types that are pending and not yet approved by this dept
+        approved_ids = DepartmentApproval.objects.filter(
+            department=dept
+        ).values_list("application_id", flat=True)
+
+        pending_forms = Application.objects.filter(
+            status="pending",
+            type__in=form_types
+        ).exclude(id__in=approved_ids).order_by("-created_at")
+
+    # Stats
+    approved_count = Application.objects.filter(status='approved').count()
+    returned_count = Application.objects.filter(status='returned').count()
+    today_count = Application.objects.filter(submitted_at__date=timezone.now().date()).count()
 
     recent_forms = Application.objects.filter(
-        status__in=["approved", "returned"], **dept_filter
+        status__in=["approved", "returned"]
     ).order_by('-reviewed_at', '-updated_at')[:5]
 
-    # API forms from external system
+    # External forms
     api_forms = api_client.get_all_forms()
-    api_pending_count = sum(1 for f in api_forms if f.get('status') == 'pending')
-    api_approved_count = sum(1 for f in api_forms if f.get('status') == 'approved')
-    api_returned_count = sum(1 for f in api_forms if f.get('status') == 'rejected') 
     
-    print(current_user.department)
     
-    for form in pending_forms:
-        print(f"Form ID: {form.id}, Department: {form.user.department}")
+    remaining_approvals = {}
+
+    for app in pending_forms:
+        try:
+            rule = ApprovalRule.objects.get(form_type=app.type)
+            required = set(rule.departments_required.all())
+        except ApprovalRule.DoesNotExist:
+            required = set()
+
+        approved = set(
+            Department.objects.filter(
+                id__in=DepartmentApproval.objects.filter(application=app).values_list("department_id", flat=True)
+            )
+        )
+
+        remaining = required - approved
+        remaining_approvals[app.id] = [dept.name for dept in remaining]
 
     context = {
-        'active_page': 'ApplicationApprovals',
-        'user': current_user,
-        'pending_forms': pending_forms,
-        'recent_forms': recent_forms,
-        'pending_count': pending_forms.count(),
-        'approved_count': approved_count,
-        'returned_count': returned_count,
-        'today_count': today_count,
-        'api_forms': api_forms
+        "active_page": "ApplicationApprovals",
+        "user": current_user,
+        "pending_forms": pending_forms,
+        "recent_forms": recent_forms,
+        "pending_count": pending_forms.count(),
+        "approved_count": approved_count,
+        "returned_count": returned_count,
+        "today_count": today_count,
+        "api_forms": api_forms,
+        "remaining_approvals": remaining_approvals,
     }
     return render(request, "admin_panel/ApplicationApprovalsDashboard.html", context)
+
 
 
 def select_form_type(request):
@@ -340,13 +369,16 @@ def save_ferpa_form(request):
                     messages.error(request, "Form type not found. Please try again.")
                     return redirect('Applications')
 
+                # Get dynamic department from ApprovalRule
+                rule = ApprovalRule.objects.filter(form_type=application_type).first()
+                assigned_dept = rule.departments_required.first() if rule else None
+
                 application = Application.objects.create(
                     user=user,
                     type=application_type,
-                    department=Department.objects.get(code="registrar"),
+                    department=assigned_dept,
                     application_name=f"New {application_type.replace('_', ' ').title()} Application",
-                    status="draft"
-                )
+                    status="draft")
                 request.session['current_application_id'] = application.id
             else:
                 application = get_object_or_404(Application, id=application_id, user=user)
@@ -403,11 +435,14 @@ def save_texas_affidavit_form(request):
                 if not application_type:
                     messages.error(request, "Form type not found. Please try again.")
                     return redirect('Applications')
+                
+                rule = ApprovalRule.objects.filter(form_type=application_type).first()
+                assigned_dept = rule.departments_required.first() if rule else None
 
                 application = Application.objects.create(
                     user=user,
                     type=application_type,
-                    department=Department.objects.get(code="residency"),
+                    department=assigned_dept,
                     application_name=f"New {application_type.replace('_', ' ').title()} Application",
                     status='draft' if is_draft else 'pending',
                     submitted_at=None if is_draft else timezone.now()
@@ -642,22 +677,52 @@ def generate_pdf(request, app_id):
 
 
 def approve_form(request, app_id):
-    """Approve an application if the user is manager or superuser."""
     if "access_token" not in request.session:
         return redirect("login")
 
     email = request.session.get("user_email")
-    if not email:
-        return redirect("login")
-
     current_user = User.objects.filter(email=email).first()
-    if not current_user or current_user.role not in ["superuser", "manager"]:
-        return HttpResponseForbidden("You do not have permission to approve forms.")
+
+    if not current_user:
+        return HttpResponseForbidden("Not logged in")
 
     application = get_object_or_404(Application, id=app_id, status="pending")
-    application.approve(reviewer=current_user)
-    return redirect("ApplicationApprovals")
 
+    # ✅ Superuser can approve directly
+    if current_user.role == "superuser":
+        application.approve(reviewer=current_user)
+        return redirect("ApplicationApprovals")
+
+    # ✅ Manager/Approver must belong to a department
+    if not current_user.department:
+        return HttpResponseForbidden("No department assigned")
+
+    # ✅ Prevent duplicate approvals
+    already_approved = DepartmentApproval.objects.filter(
+        application=application,
+        department=current_user.department
+    ).exists()
+
+    if not already_approved:
+        # Record this department's approval
+        DepartmentApproval.objects.create(
+            application=application,
+            department=current_user.department,
+            approved_by=current_user
+        )
+
+    # ✅ Check if all required departments have approved
+    rule = ApprovalRule.objects.filter(form_type=application.type).first()
+    required_departments = rule.departments_required.all() if rule else []
+
+    approved_departments = DepartmentApproval.objects.filter(
+        application=application
+    ).values_list("department", flat=True)
+
+    if set(dept.id for dept in required_departments).issubset(set(approved_departments)):
+        application.approve(reviewer=current_user)
+
+    return redirect("ApplicationApprovals")
 
 def return_form(request, app_id):
     """Return an application for revision if the user is manager or superuser."""
@@ -680,6 +745,7 @@ def return_form(request, app_id):
 
     application = get_object_or_404(Application, id=app_id, status="pending")
     application.return_for_revision(reviewer=current_user, comments=comments)
+    DepartmentApproval.objects.filter(application=application).delete()
     return redirect("ApplicationApprovals")
 
 
@@ -936,6 +1002,11 @@ def edit_texas_residency(request, app_id):
 
 
 
+
+
+
+#v4 
+
 def verify_cougar_id(request):
     if "access_token" not in request.session:
         return redirect("login")
@@ -986,4 +1057,24 @@ def change_user_department(request, user_id):
         user.save()
         
         
+    return redirect("admin_dashboard")
+
+@csrf_exempt
+def set_approval_rule(request):
+    if request.method == "POST":
+        form_type = request.POST.get("form_type")
+        department_codes = request.POST.getlist("departments")
+
+        if form_type and department_codes:
+            rule, created = ApprovalRule.objects.get_or_create(form_type=form_type)
+            rule.departments_required.clear()
+            for code in department_codes:
+                dept = Department.objects.filter(code=code).first()
+                if dept:
+                    rule.departments_required.add(dept)
+            rule.save()
+            messages.success(request, f"Approval rule updated for {form_type}")
+        else:
+            messages.error(request, "Please select a form type and at least one department.")
+
     return redirect("admin_dashboard")

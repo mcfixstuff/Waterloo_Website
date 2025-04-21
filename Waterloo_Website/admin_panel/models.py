@@ -202,4 +202,26 @@ class TexasResidencyAffidavit(models.Model):
         super().save(*args, **kwargs)
         
         
+class ApprovalRule(models.Model):
+    FORM_CHOICES = [
+        ('ferpa', 'FERPA Authorization'),
+        ('texas_residency', 'Texas Residency Affidavit'),
+    ]
+    form_type = models.CharField(max_length=50, choices=FORM_CHOICES, unique=True)
+    departments_required = models.ManyToManyField(Department)
+
+    def __str__(self):
+        return f"{self.get_form_type_display()} Approval Rule"
+    
+    
+class DepartmentApproval(models.Model):
+    application = models.ForeignKey(Application, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    approved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('application', 'department')  # prevent duplicates
+        
+        
         

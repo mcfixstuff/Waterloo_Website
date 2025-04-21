@@ -19,7 +19,7 @@
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{% url 'admin_dashboard' %}">Dashboard</a>
                     </li>
-                    {% if user_role != 'superuser' or user_role == 'manager' %}
+                    {% if user_role == 'superuser' or user_role == 'manager' or user_role == 'approver' %}  
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'ApplicationApprovals' %}active{% endif %}" href="{% url 'ApplicationApprovals' %}">Application Approvals</a>
                     </li>
@@ -73,6 +73,84 @@
                 </div>
             </div>
         </div>
+
+        {% if user_role == "superuser" %}
+        <div class="card mb-4">
+            <div class="card-header ">
+                <h5 class="mb-0">Set Approval Rules for Forms</h5>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'set_approval_rule' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="form_type" class="form-label">Select Form Type:</label>
+                        <select name="form_type" id="form_type" class="form-select" required>
+                            <option value="ferpa">FERPA Authorization</option>
+                            <option value="texas_residency">Texas Residency Affidavit</option>
+                        </select>
+                    </div>
+        
+                    <div class="mb-3">
+                        <label class="form-label">Departments that must approve:</label><br>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="departments" value="registrar" id="registrar">
+                            <label class="form-check-label" for="registrar">Registrar's Office</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="departments" value="residency" id="residency">
+                            <label class="form-check-label" for="residency">Residency Services</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="departments" value="advising" id="advising">
+                            <label class="form-check-label" for="advising">Academic Advising</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="departments" value="academic_affairs" id="academic_affairs">
+                            <label class="form-check-label" for="academic_affairs">Academic Affairs</label>
+                        </div>
+                    </div>
+        
+                    <button type="submit" class="btn btn-success">Save Approval Rule</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- ✅ List of Current Approval Rules -->
+        <div class="card mb-4">
+            <div class="card-header ">
+                <h5 class="mb-0">Current Approval Rules</h5>
+            </div>
+            <div class="card-body">
+                {% for rule in approval_rules %}
+                <div class="mb-2">
+                    <strong>{{ rule.get_form_type_display }}:</strong>
+                    {% if rule.departments_required.all %}
+                        {% for dept in rule.departments_required.all %}
+                            <span class="badge bg-secondary">{{ dept.name }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">No departments set</span>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-muted">No rules defined yet.</p>
+                {% endfor %}
+
+        <!-- 🔵 Hardcoded entries for Toronto forms -->
+        <div class="mb-2 mt-4">
+            <strong>Special Circumstance (Toronto):</strong>
+            <span class="badge bg-warning text-dark">External - Approval Handled in Toronto</span>
+        </div>
+        <div class="mb-2">
+            <strong>Instructor Drop (Toronto):</strong>
+            <span class="badge bg-warning text-dark">External - Approval Handled in Toronto</span>
+        </div>
+
+
+
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Enabled Users By Department -->
         <h3 class="h4 mb-3">Enabled Users by Department</h3>

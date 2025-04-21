@@ -41,5 +41,7 @@ urlpatterns = [
     
     #v4
     path('change-department/<int:user_id>/', views.change_user_department, name='change_user_department'),
+    
+    path('set-approval-rule/', views.set_approval_rule, name='set_approval_rule'),
 
 ]
