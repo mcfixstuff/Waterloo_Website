@@ -564,6 +564,11 @@ def save_texas_affidavit_form(request):
     return redirect('Applications')
 ############## END OF save_texas_affidavit_form FUNCTION #########################
 
+################ START OF preview_application FUNCTION ####################
+# Displays a read-only preview of a user's application. Chooses the appropriate
+# template and data context based on the application type (FERPA or Texas Residency).
+# Access is restricted to the application owner, superusers, or managers.
+########################################################################
 
 def preview_application(request, app_id):
     """Display a read-only preview of an application form."""
@@ -598,6 +603,13 @@ def preview_application(request, app_id):
         context["texas_affidavit"] = texas_affidavit
 
     return render(request, template_name, context)
+############## END OF preview_application FUNCTION #########################
+
+################ START OF generate_pdf FUNCTION ####################
+# Generates a PDF version of the user's application form using a LaTeX template.
+# Supports both FERPA and Texas Residency forms. Injects user data into the LaTeX
+# template, compiles it with pdflatex, and streams the result back to the browser.
+########################################################################
 
 def generate_pdf(request, app_id):
 
@@ -709,7 +721,14 @@ def generate_pdf(request, app_id):
 
         pdf_path = os.path.join(tmpdir, "form.pdf")
         return FileResponse(open(pdf_path, "rb"), content_type="application/pdf")
+    
+############## END OF generate_pdf FUNCTION #########################
 
+################ START OF approve_form FUNCTION ####################
+# Handles the approval of an application. Superusers can approve directly,
+# while managers and approvers must belong to a department and only approve
+# if all required departments have approved.
+########################################################################
 
 def approve_form(request, app_id):
     if "access_token" not in request.session:
@@ -758,6 +777,13 @@ def approve_form(request, app_id):
         application.approve(reviewer=current_user)
 
     return redirect("ApplicationApprovals")
+############## END OF approve_form FUNCTION #########################
+
+
+################ START OF return_form FUNCTION ####################
+# Allows managers and superusers to return an application for revision.
+# POST includes comments; GET loads the return form template.
+########################################################################
 
 def return_form(request, app_id):
     """Return an application for revision if the user is manager or superuser."""
@@ -782,7 +808,12 @@ def return_form(request, app_id):
     application.return_for_revision(reviewer=current_user, comments=comments)
     DepartmentApproval.objects.filter(application=application).delete()
     return redirect("ApplicationApprovals")
+############## END OF return_form FUNCTION #########################
 
+################ START OF edit_ferpa_form FUNCTION ####################
+# Allows the original user to edit their FERPA application if it's in a
+# draft or returned state. Handles both rendering and saving updates.
+########################################################################
 
 def edit_ferpa_form(request, app_id):
     """Allow a user to edit their draft or returned FERPA form."""
@@ -884,6 +915,13 @@ def edit_ferpa_form(request, app_id):
         "active_page": "Applications"
     }
     return render(request, "FERPA_Authorization_form.html", context)
+############## END OF edit_ferpa_form FUNCTION #########################
+
+
+################ START OF edit_texas_residency FUNCTION ####################
+# Allows the original user to edit their Texas Residency Affidavit while
+# in draft or returned state. Handles both rendering and form submission logic.
+########################################################################
 
 def edit_texas_residency(request, app_id):
     """Allow a user to edit their draft or returned Texas Residency Affidavit."""
@@ -1034,6 +1072,7 @@ def edit_texas_residency(request, app_id):
     
     # Fix: Use the correct template path (update this to match your actual template location)
     return render(request, "Texas_Residency_Affidavit_Form.html", context)
+############## END OF edit_texas_residency FUNCTION #########################
 
 
 
@@ -1041,6 +1080,10 @@ def edit_texas_residency(request, app_id):
 
 
 #v4 
+################ START OF verify_cougar_id FUNCTION ####################
+# Validates a 7-digit Cougar ID. If the user already has one saved,
+# it verifies it. Otherwise, it saves the entered value as their Cougar ID.
+########################################################################
 
 def verify_cougar_id(request):
     if "access_token" not in request.session:
@@ -1078,6 +1121,12 @@ def verify_cougar_id(request):
             messages.success(request, "Cougar‑ID saved and verified ✔")
 
     return redirect("Applications")
+############## END OF verify_cougar_id FUNCTION #########################
+
+################ START OF change_user_department FUNCTION ####################
+# Admin-only view to update a user's department by department code.
+# Used in the admin dashboard via AJAX or form submission.
+########################################################################
 
 @csrf_exempt
 def change_user_department(request, user_id):
@@ -1093,6 +1142,12 @@ def change_user_department(request, user_id):
         
         
     return redirect("admin_dashboard")
+############## END OF change_user_department FUNCTION #########################
+
+################ START OF set_approval_rule FUNCTION ####################
+# Allows admins to configure which departments are required to approve
+# a specific form type. Stores department codes as many-to-many relationships.
+########################################################################
 
 @csrf_exempt
 def set_approval_rule(request):
@@ -1113,3 +1168,4 @@ def set_approval_rule(request):
             messages.error(request, "Please select a form type and at least one department.")
 
     return redirect("admin_dashboard")
+############## END OF set_approval_rule FUNCTION #########################
