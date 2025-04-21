@@ -442,7 +442,11 @@ def save_ferpa_form(request):
     return redirect('Applications')
 ############## END OF save_ferpa_form FUNCTION #########################
 
-
+################ START OF save_texas_affidavit_form FUNCTION ####################
+# Saves the Texas Residency Affidavit form. Creates or updates the associated
+# Application and TexasResidencyAffidavit models. Handles both draft and
+# final submission modes based on form POST values.
+########################################################################
 def save_texas_affidavit_form(request):
     """Save Texas Residency Affidavit form data, creating an Application only when explicitly saved."""
     if "access_token" not in request.session:
@@ -558,6 +562,7 @@ def save_texas_affidavit_form(request):
         return redirect('Applications')
 
     return redirect('Applications')
+############## END OF save_texas_affidavit_form FUNCTION #########################
 
 
 def preview_application(request, app_id):
