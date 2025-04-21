@@ -224,9 +224,12 @@ def upload_signature(request):
     return render(request, "admin_panel/Applications.html", context)
 ############## END OF upload_signature FUNCTION #########################
 
-
+################ START OF Applications FUNCTION ####################
+# Renders the Applications page for a user. It includes their submitted
+# applications, a signature upload form, and available forms fetched from
+# the academic_forms API. It also tracks Cougar ID verification.
+########################################################################
 def Applications(request):
-    """Render the Applications page with signature form and applications."""
     if "access_token" not in request.session:
         return redirect("login")
 
@@ -236,16 +239,11 @@ def Applications(request):
 
     user = get_object_or_404(User, email=email)
     signature_form = UserSignatureForm(instance=user)
-
     applications = Application.objects.filter(user=user).order_by('-updated_at')
-        # Get API-based forms
-    api_forms = api_client.get_all_forms(email=email)
-    
-    api_forms = api_client.get_all_forms(email=email)
 
+    api_forms = api_client.get_all_forms(email=email)
     for form in api_forms:
         print(f"Form ID: {form['id']}, Status: {form['status']}")
-
 
     context = {
         'active_page': 'Applications',
@@ -253,13 +251,18 @@ def Applications(request):
         'signature_form': signature_form,
         'applications': applications,
         'api_forms': api_forms,
-        'require_cougar_id': True,  # Always require Cougar ID
+        'require_cougar_id': True,
         'cougar_verified': request.session.get("cougar_verified", False),
-        
     }
     return render(request, "admin_panel/Applications.html", context)
+############## END OF Applications FUNCTION #########################
 
 
+################ START OF ApplicationApprovals FUNCTION ####################
+# This view is for superusers, managers, and approvers to see pending forms
+# requiring their department's approval. It also includes some dashboard stats
+# and recent forms, and calculates which departments have yet to approve each form.
+########################################################################
 def ApplicationApprovals(request):
     if "access_token" not in request.session:
         return redirect("login")
@@ -270,19 +273,12 @@ def ApplicationApprovals(request):
     if not current_user or current_user.role not in ["superuser", "manager", "approver"]:
         return HttpResponseForbidden("You do not have permission to access this page.")
 
-    # 🧠 Superuser sees all pending forms
     if current_user.role == "superuser":
         pending_forms = Application.objects.filter(status="pending").order_by("-created_at")
-
-    # 👥 Manager/Approver sees only those requiring their department
     else:
         dept = current_user.department
-
-        # Get all form types where this department is required
         rules = ApprovalRule.objects.filter(departments_required=dept)
         form_types = [rule.form_type for rule in rules]
-
-        # Get applications of those form types that are pending and not yet approved by this dept
         approved_ids = DepartmentApproval.objects.filter(
             department=dept
         ).values_list("application_id", flat=True)
@@ -292,7 +288,6 @@ def ApplicationApprovals(request):
             type__in=form_types
         ).exclude(id__in=approved_ids).order_by("-created_at")
 
-    # Stats
     approved_count = Application.objects.filter(status='approved').count()
     returned_count = Application.objects.filter(status='returned').count()
     today_count = Application.objects.filter(submitted_at__date=timezone.now().date()).count()
@@ -301,10 +296,7 @@ def ApplicationApprovals(request):
         status__in=["approved", "returned"]
     ).order_by('-reviewed_at', '-updated_at')[:5]
 
-    # External forms
     api_forms = api_client.get_all_forms()
-    
-    
     remaining_approvals = {}
 
     for app in pending_forms:
@@ -319,7 +311,6 @@ def ApplicationApprovals(request):
                 id__in=DepartmentApproval.objects.filter(application=app).values_list("department_id", flat=True)
             )
         )
-
         remaining = required - approved
         remaining_approvals[app.id] = [dept.name for dept in remaining]
 
@@ -336,8 +327,7 @@ def ApplicationApprovals(request):
         "remaining_approvals": remaining_approvals,
     }
     return render(request, "admin_panel/ApplicationApprovalsDashboard.html", context)
-
-
+############## END OF ApplicationApprovals FUNCTION #########################
 
 def select_form_type(request):
     """Handle form type selection from the modal without creating a draft record immediately."""
